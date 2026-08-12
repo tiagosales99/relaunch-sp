@@ -8,14 +8,14 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap');
 :root {
-  --bg:#F4F6F9; --surface:#fff; --surface2:#F0F2F5; --border:#DDE1E8;
+  --bg:#FFD600; --surface:#fff; --surface2:#FFF8CC; --border:#1A1A1A;
   --red:#D93025; --blue:#1A73E8; --green:#0F9D58; --yellow:#F29900; --purple:#6D28D9;
   --text:#1C2333; --muted:#6B7799; --radius:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:14px;min-height:100vh;padding-bottom:60px;}
 .header{background:#fff;border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,.06);}
-.logo{width:36px;height:36px;background:var(--red);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:16px;color:#fff;}
+.logo{width:36px;height:36px;background:#FFD600;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:16px;color:#1A1A1A;}
 .header-left{display:flex;align-items:center;gap:12px;}
 .htitle{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;}
 .hsub{font-size:11px;color:var(--muted);}
@@ -299,9 +299,9 @@ select.finput{appearance:none;}
 </div><!-- /container -->
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyA3xFNdsqSu6pOQniwip5jObdGz_Mx4pON2tdK4edLpqatp1_-54wu1ObokD3WEzFj/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRlMsCKAxPzFLQc4-BaD-hi4VUGb13YsbBFbNHFCyQKoq4Ft2jCWbWePTHRl8ovict/exec';
 const COACHING_KEY = '99_coaching_notas';
-const BDS = ['Vera','Inacio','Andre','Felipe','Sutil'];
+const BDS = ['Andre','Bruno','Carlos Barboza','Sutil','Felipe','Fred','Inacio','Vera'];
 const COLORS = ['#D93025','#1A73E8','#0F9D58','#F29900','#6D28D9'];
 
 let todosReportes = [];
@@ -348,18 +348,29 @@ function filtrarEAplicar() {
   renderOperacional(reportesFiltrados);
 }
 
-// ── CARREGAR DADOS ────────────────────────────────────────────
-async function carregarDados() {
+// ── CARREGAR DADOS (JSONP para contornar CORS) ────────────────
+function carregarDados() {
   document.getElementById('last-upd').textContent = 'Carregando...';
-  try {
-    const r = await fetch(SCRIPT_URL + '?action=read&t=' + Date.now());
-    todosReportes = await r.json();
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(data) {
+    todosReportes = Array.isArray(data) ? data : [];
     filtrarEAplicar();
     document.getElementById('last-upd').textContent = 'Atualizado às ' +
       new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  } catch(e) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-script');
+    if (el) el.remove();
+  };
+  const old = document.getElementById('jsonp-script');
+  if (old) old.remove();
+  const s = document.createElement('script');
+  s.id = 'jsonp-script';
+  s.onerror = function() {
     document.getElementById('last-upd').textContent = 'Erro ao carregar';
-  }
+    delete window[cb];
+  };
+  s.src = SCRIPT_URL + '?callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
