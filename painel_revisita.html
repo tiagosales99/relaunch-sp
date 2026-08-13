@@ -110,17 +110,27 @@ window.onload = function() {
   carregarFila();
 };
 
-async function carregarFila() {
+function carregarFila() {
   document.getElementById('lista-leads').innerHTML = '<div class="loading">Carregando fila...</div>';
-  try {
-    const r = await fetch(SCRIPT_URL + '?tipo=revisita&t=' + Date.now());
-    const data = await r.json();
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(data) {
     filaAtual = Array.isArray(data) ? data : [];
     document.getElementById('meta-fila').textContent = filaAtual.length;
     renderizarLista();
-  } catch(e) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-script');
+    if (el) el.remove();
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-script';
+  s.onerror = function() {
     document.getElementById('lista-leads').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Não consegui buscar a fila. Confira a URL do script.</div>';
-  }
+    delete window[cb];
+  };
+  const old = document.getElementById('jsonp-script');
+  if (old) old.remove();
+  s.src = SCRIPT_URL + '?tipo=revisita&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
 }
 
 function renderizarLista() {
@@ -182,7 +192,7 @@ function abrirForm(id, tipo) {
   el.classList.add('show');
 }
 
-async function salvarTentativa(id, tipo) {
+function salvarTentativa(id, tipo) {
   const quem = document.getElementById('quem-sou').value;
   if (!quem) { alert('Selecione quem você é lá em cima antes de registrar.'); return; }
   const obs = document.getElementById('obs-' + id).value.trim();
@@ -198,19 +208,27 @@ async function salvarTentativa(id, tipo) {
     reuniao_agendada: reuniao
   });
 
-  try {
-    const r = await fetch(SCRIPT_URL + '?' + params.toString());
-    const resultado = await r.json();
-    if (resultado.status !== 'ok') { alert('O script retornou um erro: ' + (resultado.msg || 'desconhecido')); return; }
+  const cb = 'cbsalvar_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-salvar');
+    if (el) el.remove();
+    if (!resultado || resultado.status !== 'ok') { alert('O script retornou um erro: ' + (resultado && resultado.msg || 'desconhecido')); return; }
     ligacoesHoje++;
     if (reuniao === 'S') reunioesHoje++;
     document.getElementById('meta-ligacoes').textContent = ligacoesHoje;
     document.getElementById('meta-reunioes').textContent = reunioesHoje;
     const card = document.getElementById('card-' + id);
     if (card) card.remove();
-  } catch(e) {
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-salvar';
+  s.onerror = function() {
+    delete window[cb];
     alert('Erro ao salvar. Tenta de novo.');
-  }
+  };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
 }
 </script>
 </body>
