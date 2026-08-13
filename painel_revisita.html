@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fila de Revisita , 99Abastece Relaunch SP</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --amarelo: #FFD600; --preto: #1A1A1A; --cinza-escuro: #232323; --cinza-medio: #2C2C2C;
+  --branco: #FFFFFF; --texto-claro: #9A9A9A; --borda: #3A3A3A;
+  --verde: #00C853; --vermelho: #FF5252; --laranja: #FFA726; --radius: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);color:var(--branco);min-height:100vh;}
+.topbar{background:var(--amarelo);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.topbar-brand{display:flex;align-items:center;gap:10px;}
+.topbar-logo{width:34px;height:34px;background:var(--preto);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--amarelo);}
+.topbar-title{font-weight:800;font-size:16px;color:var(--preto);line-height:1.1;}
+.topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
+
+.container{max-width:820px;margin:0 auto;padding:20px 16px 60px;}
+
+/* SELETOR DE QUEM SOU EU */
+.quem-sou{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.quem-sou label{font-size:11px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;}
+.quem-sou select{background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;padding:8px 14px;outline:none;}
+
+/* META DO DIA */
+.meta-hoje{display:flex;gap:12px;margin-bottom:18px;}
+.meta-card{flex:1;background:var(--cinza-escuro);border:1.5px solid var(--borda);border-radius:var(--radius);padding:14px 16px;text-align:center;}
+.meta-label{font-size:10px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.meta-valor{font-size:24px;font-weight:800;color:var(--amarelo);}
+
+/* CARD DE LEAD */
+.lead-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:4px solid var(--laranja);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;}
+.lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.lead-posto{font-weight:800;font-size:15px;}
+.lead-prio{font-size:10px;font-weight:800;padding:3px 10px;border-radius:12px;background:#3D2A00;color:var(--laranja);white-space:nowrap;}
+.lead-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
+.lead-meta b{color:var(--branco);}
+.lead-dias{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--vermelho);}
+
+.acoes{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.btn-acao{flex:1;min-width:140px;border:none;border-radius:8px;padding:10px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.btn-tem-contato{background:var(--verde);color:var(--preto);}
+.btn-sem-contato{background:var(--cinza-medio);color:var(--branco);border:1.5px solid var(--borda);}
+.btn-recusou{background:var(--vermelho);color:var(--branco);}
+
+/* FORM DE REGISTRO (aparece ao clicar numa ação) */
+.form-registro{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--borda);}
+.form-registro.show{display:block;}
+.form-registro label{display:block;font-size:11px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;margin-top:10px;}
+.form-registro textarea, .form-registro select{width:100%;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:13px;padding:9px 12px;outline:none;resize:vertical;}
+.checkbox-reuniao{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.checkbox-reuniao input{width:16px;height:16px;}
+.btn-salvar{margin-top:12px;width:100%;background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
+.btn-cancelar{margin-top:6px;width:100%;background:none;color:var(--texto-claro);border:none;padding:6px;font-family:'Montserrat',sans-serif;font-size:11px;cursor:pointer;}
+
+.empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
+.empty-icon{font-size:30px;margin-bottom:10px;}
+.loading{text-align:center;padding:50px 20px;color:var(--texto-claro);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">99</div>
+    <div>
+      <div class="topbar-title">Fila de Revisita</div>
+      <div class="topbar-sub">Leads travados esperando retorno</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="quem-sou">
+    <label>Quem é você?</label>
+    <select id="quem-sou" onchange="salvarQuem()">
+      <option value="">Selecione</option>
+      <option value="Bruno">Bruno</option>
+      <option value="Carlos Barboza">Carlos Barboza</option>
+    </select>
+  </div>
+
+  <div class="meta-hoje">
+    <div class="meta-card"><div class="meta-label">Ligações hoje</div><div class="meta-valor" id="meta-ligacoes">0</div></div>
+    <div class="meta-card"><div class="meta-label">Reuniões agendadas</div><div class="meta-valor" id="meta-reunioes">0</div></div>
+    <div class="meta-card"><div class="meta-label">Na fila</div><div class="meta-valor" id="meta-fila">-</div></div>
+  </div>
+
+  <div id="lista-leads"><div class="loading">Carregando fila...</div></div>
+
+</div>
+
+<script>
+const SCRIPT_URL = 'COLE_AQUI_A_MESMA_URL_DO_SCRIPT_DE_TAREFAS';
+
+let filaAtual = [];
+let ligacoesHoje = 0, reunioesHoje = 0;
+
+function salvarQuem() {
+  localStorage.setItem('revisita_quem', document.getElementById('quem-sou').value);
+}
+window.onload = function() {
+  const salvo = localStorage.getItem('revisita_quem');
+  if (salvo) document.getElementById('quem-sou').value = salvo;
+  carregarFila();
+};
+
+function carregarFila() {
+  document.getElementById('lista-leads').innerHTML = '<div class="loading">Carregando fila...</div>';
+  const cb = 'cb_' + Date.now();
+  window[cb] = function(data) {
+    filaAtual = Array.isArray(data) ? data : [];
+    document.getElementById('meta-fila').textContent = filaAtual.length;
+    renderizarLista();
+    delete window[cb];
+    const el = document.getElementById('jsonp-script');
+    if (el) el.remove();
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-script';
+  s.onerror = function() {
+    document.getElementById('lista-leads').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Não consegui buscar a fila. Confira a URL do script.</div>';
+    delete window[cb];
+  };
+  const old = document.getElementById('jsonp-script');
+  if (old) old.remove();
+  s.src = SCRIPT_URL + '?tipo=revisita&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
+
+function renderizarLista() {
+  const container = document.getElementById('lista-leads');
+  if (!filaAtual.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>Nenhum lead na fila de revisita agora.</div>';
+    return;
+  }
+  container.innerHTML = filaAtual.map(t => `
+    <div class="lead-card" id="card-${t.id_revisita}">
+      <div class="lead-top">
+        <div class="lead-posto">${t.posto || 'Posto não informado'}</div>
+        <div class="lead-prio">Grid ${t.prioridade_grid || '-'}</div>
+      </div>
+      <div class="lead-meta">CNPJ: <b>${t.cnpj}</b></div>
+      <div class="lead-meta">Status: <b>${t.status_lead}</b> · BD original: <b>${t.bd_original}</b></div>
+      <div class="lead-meta">Tentativas anteriores: <b>${t.tentativas}</b>${t.quem_ultima_tentativa ? ' · última por ' + t.quem_ultima_tentativa + ' em ' + t.data_ultima_tentativa : ''}</div>
+      <span class="lead-dias">${t.dias_na_fila} dia(s) na fila</span>
+
+      <div class="acoes">
+        <button class="btn-acao btn-tem-contato" onclick="abrirForm('${t.id_revisita}','tem_contato')">📞 Tem contato</button>
+        <button class="btn-acao btn-sem-contato" onclick="abrirForm('${t.id_revisita}','sem_contato')">🔍 Sem contato</button>
+        <button class="btn-acao btn-recusou" onclick="abrirForm('${t.id_revisita}','recusou')">✕ Recusou de novo</button>
+      </div>
+
+      <div class="form-registro" id="form-${t.id_revisita}"></div>
+    </div>
+  `).join('');
+}
+
+function abrirForm(id, tipo) {
+  const el = document.getElementById('form-' + id);
+  const jaAberto = el.classList.contains('show');
+  document.querySelectorAll('.form-registro').forEach(f => f.classList.remove('show'));
+  if (jaAberto) return;
+
+  let campos = '';
+  if (tipo === 'tem_contato') {
+    campos = `
+      <label>O que aconteceu na ligação?</label>
+      <textarea id="obs-${id}" placeholder="Ex: Falei com o gerente, ficou de conversar com o dono e retornar."></textarea>
+      <div class="checkbox-reuniao">
+        <input type="checkbox" id="reuniao-${id}">
+        <label style="margin:0;">Consegui agendar reunião pro time fechar</label>
+      </div>`;
+  } else if (tipo === 'sem_contato') {
+    campos = `
+      <label>O que você encontrou pesquisando os sócios?</label>
+      <textarea id="obs-${id}" placeholder="Ex: Nome do sócio X, achei outro posto dele em Y, tentando esse canal agora."></textarea>`;
+  } else {
+    campos = `
+      <label>Motivo da recusa</label>
+      <textarea id="obs-${id}" placeholder="Ex: Disse que já tem outro app parceiro e não quer trocar agora."></textarea>`;
+  }
+
+  el.innerHTML = campos + `
+    <button class="btn-salvar" onclick="salvarTentativa('${id}','${tipo}')">Salvar</button>
+    <button class="btn-cancelar" onclick="document.getElementById('form-${id}').classList.remove('show')">Cancelar</button>`;
+  el.classList.add('show');
+}
+
+async function salvarTentativa(id, tipo) {
+  const quem = document.getElementById('quem-sou').value;
+  if (!quem) { alert('Selecione quem você é lá em cima antes de registrar.'); return; }
+  const obs = document.getElementById('obs-' + id).value.trim();
+  const reuniaoEl = document.getElementById('reuniao-' + id);
+  const reuniao = reuniaoEl && reuniaoEl.checked ? 'S' : 'Nao';
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        action: 'registrar_tentativa', id_revisita: id,
+        resultado: tipo, quem, observacao: obs, reuniao_agendada: reuniao
+      })
+    });
+    ligacoesHoje++;
+    if (reuniao === 'S') reunioesHoje++;
+    document.getElementById('meta-ligacoes').textContent = ligacoesHoje;
+    document.getElementById('meta-reunioes').textContent = reunioesHoje;
+    const card = document.getElementById('card-' + id);
+    if (card) card.remove();
+  } catch(e) {
+    alert('Erro ao salvar. Tenta de novo.');
+  }
+}
+</script>
+</body>
+</html>
