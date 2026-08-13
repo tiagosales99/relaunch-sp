@@ -208,7 +208,7 @@ async function buscarSocios(id) {
   const box = document.getElementById('socios-' + id);
   if (!lead || !lead.cnpj || !box) return;
   try {
-    const cnpjLimpo = lead.cnpj.replace(/\D/g, '');
+    const cnpjLimpo = lead.cnpj.replace(/\D/g, '').padStart(14, '0');
     const r = await fetch('https://brasilapi.com.br/api/cnpj/v1/' + cnpjLimpo);
     if (!r.ok) throw new Error('não encontrado');
     const dados = await r.json();
