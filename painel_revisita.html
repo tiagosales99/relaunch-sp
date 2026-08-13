@@ -51,6 +51,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .form-registro{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--borda);}
 .form-registro.show{display:block;}
 .form-registro label{display:block;font-size:11px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;margin-top:10px;}
+.socios-box{background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6;color:var(--branco);}
 .form-registro textarea, .form-registro select{width:100%;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:13px;padding:9px 12px;outline:none;resize:vertical;}
 .checkbox-reuniao{display:flex;align-items:center;gap:8px;margin-top:10px;}
 .checkbox-reuniao input{width:16px;height:16px;}
@@ -185,8 +186,9 @@ function abrirForm(id, tipo) {
       </div>`;
   } else if (tipo === 'sem_contato') {
     campos = `
+      <div id="socios-${id}" class="socios-box">🔍 Buscando sócios desse CNPJ...</div>
       <label>O que você encontrou pesquisando os sócios?</label>
-      <textarea id="obs-${id}" placeholder="Ex: Nome do sócio X, achei outro posto dele em Y, tentando esse canal agora."></textarea>`;
+      <textarea id="obs-${id}" placeholder="Ex: Achei outro posto do mesmo sócio em Y, tentando esse canal agora."></textarea>`;
   } else {
     campos = `
       <label>Motivo da recusa</label>
@@ -197,6 +199,28 @@ function abrirForm(id, tipo) {
     <button class="btn-salvar" onclick="salvarTentativa('${id}','${tipo}')">Salvar</button>
     <button class="btn-cancelar" onclick="document.getElementById('form-${id}').classList.remove('show')">Cancelar</button>`;
   el.classList.add('show');
+
+  if (tipo === 'sem_contato') buscarSocios(id);
+}
+
+async function buscarSocios(id) {
+  const lead = filaAtual.find(t => t.id_revisita === id);
+  const box = document.getElementById('socios-' + id);
+  if (!lead || !lead.cnpj || !box) return;
+  try {
+    const cnpjLimpo = lead.cnpj.replace(/\D/g, '');
+    const r = await fetch('https://brasilapi.com.br/api/cnpj/v1/' + cnpjLimpo);
+    if (!r.ok) throw new Error('não encontrado');
+    const dados = await r.json();
+    const socios = Array.isArray(dados.qsa) ? dados.qsa : [];
+    if (!socios.length) {
+      box.innerHTML = '⚠️ Nenhum sócio encontrado pra esse CNPJ na base pública.';
+      return;
+    }
+    box.innerHTML = '<b>Sócios encontrados:</b><br>' + socios.map(s => `• ${s.nome_socio || s.nome} (${s.qualificacao_socio || s.qual || ''})`).join('<br>');
+  } catch (e) {
+    box.innerHTML = '⚠️ Não consegui buscar os sócios agora. Pesquisa manual mesmo.';
+  }
 }
 
 function salvarTentativa(id, tipo) {
