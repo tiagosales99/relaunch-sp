@@ -189,15 +189,19 @@ async function salvarTentativa(id, tipo) {
   const reuniaoEl = document.getElementById('reuniao-' + id);
   const reuniao = reuniaoEl && reuniaoEl.checked ? 'S' : 'Nao';
 
+  const params = new URLSearchParams({
+    action: 'registrar_tentativa',
+    id_revisita: id,
+    resultado: tipo,
+    quem: quem,
+    observacao: obs,
+    reuniao_agendada: reuniao
+  });
+
   try {
-    await fetch(SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        action: 'registrar_tentativa', id_revisita: id,
-        resultado: tipo, quem, observacao: obs, reuniao_agendada: reuniao
-      })
-    });
+    const r = await fetch(SCRIPT_URL + '?' + params.toString());
+    const resultado = await r.json();
+    if (resultado.status !== 'ok') { alert('O script retornou um erro: ' + (resultado.msg || 'desconhecido')); return; }
     ligacoesHoje++;
     if (reuniao === 'S') reunioesHoje++;
     document.getElementById('meta-ligacoes').textContent = ligacoesHoje;
