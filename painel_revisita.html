@@ -103,6 +103,7 @@ let ligacoesHoje = 0, reunioesHoje = 0;
 
 function salvarQuem() {
   localStorage.setItem('revisita_quem', document.getElementById('quem-sou').value);
+  carregarFila();
 }
 window.onload = function() {
   const salvo = localStorage.getItem('revisita_quem');
@@ -111,6 +112,12 @@ window.onload = function() {
 };
 
 function carregarFila() {
+  const quem = document.getElementById('quem-sou').value;
+  if (!quem) {
+    document.getElementById('lista-leads').innerHTML = '<div class="empty"><div class="empty-icon">👋</div>Selecione seu nome ali em cima pra ver sua fila.</div>';
+    document.getElementById('meta-fila').textContent = '-';
+    return;
+  }
   document.getElementById('lista-leads').innerHTML = '<div class="loading">Carregando fila...</div>';
   const cb = 'cb_' + Date.now();
   window[cb] = function(data) {
@@ -129,7 +136,7 @@ function carregarFila() {
   };
   const old = document.getElementById('jsonp-script');
   if (old) old.remove();
-  s.src = SCRIPT_URL + '?tipo=revisita&callback=' + cb + '&t=' + Date.now();
+  s.src = SCRIPT_URL + '?tipo=revisita&responsavel=' + encodeURIComponent(quem) + '&callback=' + cb + '&t=' + Date.now();
   document.head.appendChild(s);
 }
 
