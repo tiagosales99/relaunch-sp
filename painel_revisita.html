@@ -110,27 +110,17 @@ window.onload = function() {
   carregarFila();
 };
 
-function carregarFila() {
+async function carregarFila() {
   document.getElementById('lista-leads').innerHTML = '<div class="loading">Carregando fila...</div>';
-  const cb = 'cb_' + Date.now();
-  window[cb] = function(data) {
+  try {
+    const r = await fetch(SCRIPT_URL + '?tipo=revisita&t=' + Date.now());
+    const data = await r.json();
     filaAtual = Array.isArray(data) ? data : [];
     document.getElementById('meta-fila').textContent = filaAtual.length;
     renderizarLista();
-    delete window[cb];
-    const el = document.getElementById('jsonp-script');
-    if (el) el.remove();
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-script';
-  s.onerror = function() {
+  } catch(e) {
     document.getElementById('lista-leads').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Não consegui buscar a fila. Confira a URL do script.</div>';
-    delete window[cb];
-  };
-  const old = document.getElementById('jsonp-script');
-  if (old) old.remove();
-  s.src = SCRIPT_URL + '?tipo=revisita&callback=' + cb + '&t=' + Date.now();
-  document.head.appendChild(s);
+  }
 }
 
 function renderizarLista() {
