@@ -52,6 +52,8 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .form-registro.show{display:block;}
 .form-registro label{display:block;font-size:11px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;margin-top:10px;}
 .socios-box{background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6;color:var(--branco);}
+.btn-pitch{width:100%;margin-top:10px;background:linear-gradient(90deg,#7B3FE4,#5C2FB8);color:var(--branco);border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.pitch-box{margin-top:10px;background:#211A33;border:1.5px solid #5C2FB8;border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.7;color:var(--branco);}
 .form-registro textarea, .form-registro select{width:100%;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:13px;padding:9px 12px;outline:none;resize:vertical;}
 .checkbox-reuniao{display:flex;align-items:center;gap:8px;margin-top:10px;}
 .checkbox-reuniao input{width:16px;height:16px;}
@@ -163,6 +165,8 @@ function renderizarLista() {
         <button class="btn-acao btn-sem-contato" onclick="abrirForm('${t.id_revisita}','sem_contato')">🔍 Sem contato</button>
         <button class="btn-acao btn-recusou" onclick="abrirForm('${t.id_revisita}','recusou')">✕ Recusou de novo</button>
       </div>
+      <button class="btn-pitch" onclick="gerarPitch('${t.id_revisita}', '${(t.cnpj||'').replace(/'/g,"")}', '${(t.posto||'').replace(/'/g,"")}', '${(t.status_lead||'').replace(/'/g,"")}')">💡 Gerar pitch personalizado</button>
+      <div id="pitch-${t.id_revisita}"></div>
 
       <div class="form-registro" id="form-${t.id_revisita}"></div>
     </div>
@@ -201,6 +205,32 @@ function abrirForm(id, tipo) {
   el.classList.add('show');
 
   if (tipo === 'sem_contato') buscarSocios(id);
+}
+
+function gerarPitch(id, cnpj, posto, status) {
+  const box = document.getElementById('pitch-' + id);
+  box.innerHTML = '<div class="pitch-box">🤖 Gerando pitch personalizado...</div>';
+
+  const params = new URLSearchParams({ action: 'gerar_pitch', cnpj, posto, status });
+  const cb = 'cbpitch_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-pitch');
+    if (el) el.remove();
+    if (!resultado || resultado.status !== 'ok') {
+      box.innerHTML = '<div class="pitch-box">⚠️ Não consegui gerar o pitch: ' + (resultado && resultado.msg || 'erro desconhecido') + '</div>';
+      return;
+    }
+    box.innerHTML = '<div class="pitch-box"><b>💡 Pitch sugerido:</b><br>' + resultado.pitch.replace(/\n/g, '<br>') + '</div>';
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-pitch';
+  s.onerror = function() {
+    delete window[cb];
+    box.innerHTML = '<div class="pitch-box">⚠️ Erro ao buscar o pitch.</div>';
+  };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
 }
 
 async function buscarSocios(id) {
