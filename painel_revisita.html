@@ -28,6 +28,11 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 
 /* META DO DIA */
 .meta-hoje{display:flex;gap:12px;margin-bottom:18px;}
+.reunioes-box{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px;}
+.reunioes-titulo{font-size:11px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
+.reuniao-item{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--borda);font-size:12px;}
+.reuniao-item:last-child{border-bottom:none;}
+.reuniao-hora{color:var(--amarelo);font-weight:700;white-space:nowrap;}
 .meta-card{flex:1;background:var(--cinza-escuro);border:1.5px solid var(--borda);border-radius:var(--radius);padding:14px 16px;text-align:center;}
 .meta-label{font-size:10px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
 .meta-valor{font-size:24px;font-weight:800;color:var(--amarelo);}
@@ -52,8 +57,12 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .form-registro.show{display:block;}
 .form-registro label{display:block;font-size:11px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;margin-top:10px;}
 .socios-box{background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6;color:var(--branco);}
+.comentario-box{background:#1C2A1C;border:1px solid #3A4A3A;border-radius:8px;padding:8px 12px;font-size:11px;color:#B0B8B0;margin:8px 0;}
+.finput-inline{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:12px;padding:8px 10px;}
 .btn-pitch{width:100%;margin-top:10px;background:linear-gradient(90deg,#7B3FE4,#5C2FB8);color:var(--branco);border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
 .pitch-box{margin-top:10px;background:#211A33;border:1.5px solid #5C2FB8;border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.7;color:var(--branco);}
+.pitch-label{font-size:10px;color:#B8A8E0;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px;}
+.btn-copiar{margin-top:10px;width:100%;background:#5C2FB8;color:#fff;border:none;border-radius:6px;padding:8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;cursor:pointer;}
 .form-registro textarea, .form-registro select{width:100%;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:13px;padding:9px 12px;outline:none;resize:vertical;}
 .checkbox-reuniao{display:flex;align-items:center;gap:8px;margin-top:10px;}
 .checkbox-reuniao input{width:16px;height:16px;}
@@ -94,6 +103,11 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
     <div class="meta-card"><div class="meta-label">Na fila</div><div class="meta-valor" id="meta-fila">-</div></div>
   </div>
 
+  <div class="reunioes-box" id="reunioes-box" style="display:none;">
+    <div class="reunioes-titulo">Próximas reuniões (14 dias)</div>
+    <div id="reunioes-lista"></div>
+  </div>
+
   <div id="lista-leads"><div class="loading">Carregando fila...</div></div>
 
 </div>
@@ -109,10 +123,42 @@ function salvarQuem() {
   carregarFila();
 }
 window.onload = function() {
-  const salvo = localStorage.getItem('revisita_quem');
-  if (salvo) document.getElementById('quem-sou').value = salvo;
+  const params = new URLSearchParams(window.location.search);
+  const nomeUrl = params.get('nome');
+  if (nomeUrl) {
+    document.getElementById('quem-sou').value = nomeUrl;
+    document.getElementById('quem-sou').disabled = true;
+    localStorage.setItem('revisita_quem', nomeUrl);
+  } else {
+    const salvo = localStorage.getItem('revisita_quem');
+    if (salvo) document.getElementById('quem-sou').value = salvo;
+  }
   carregarFila();
+  carregarReunioes();
 };
+
+function carregarReunioes() {
+  const cb = 'cbreunioes_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-reunioes');
+    if (el) el.remove();
+    const box = document.getElementById('reunioes-box');
+    const lista = document.getElementById('reunioes-lista');
+    if (!Array.isArray(data) || !data.length) { box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    lista.innerHTML = data.map(r => `
+      <div class="reuniao-item">
+        <span>${r.titulo}</span>
+        <span class="reuniao-hora">${r.inicio}</span>
+      </div>`).join('');
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-reunioes';
+  s.onerror = function() { delete window[cb]; };
+  s.src = SCRIPT_URL + '?tipo=reunioes&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
 
 function carregarFila() {
   const quem = document.getElementById('quem-sou').value;
@@ -149,7 +195,14 @@ function renderizarLista() {
     container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>Nenhum lead na fila de revisita agora.</div>';
     return;
   }
-  container.innerHTML = filaAtual.map(t => `
+  container.innerHTML = filaAtual.map(t => {
+    const temContato = String(t.status_lead || '').toLowerCase().includes('com contato');
+    const botaoPitch = temContato ? `
+      <button class="btn-pitch" onclick="gerarPitch('${t.id_revisita}', '${(t.posto||'').replace(/'/g,"")}', '${(t.bd_original||'').replace(/'/g,"")}', '${(t.responsavel||'').replace(/'/g,"")}', '${(t.ultimo_comentario||'').replace(/'/g,"").replace(/\n/g,' ')}', '${t.dias_na_fila}')">Gerar mensagem para WhatsApp</button>
+      <div id="pitch-${t.id_revisita}"></div>` : '';
+    const comentarioBox = t.ultimo_comentario ? `
+      <div class="comentario-box">Último comentário do ${t.bd_original} (aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
+    return `
     <div class="lead-card" id="card-${t.id_revisita}">
       <div class="lead-top">
         <div class="lead-posto">${t.posto || 'Posto não informado'}</div>
@@ -159,18 +212,19 @@ function renderizarLista() {
       <div class="lead-meta">Status: <b>${t.status_lead}</b> · BD original: <b>${t.bd_original}</b></div>
       <div class="lead-meta">Tentativas anteriores: <b>${t.tentativas}</b>${t.quem_ultima_tentativa ? ' · última por ' + t.quem_ultima_tentativa + ' em ' + t.data_ultima_tentativa : ''}</div>
       <span class="lead-dias">${t.dias_na_fila} dia(s) na fila</span>
+      ${comentarioBox}
 
       <div class="acoes">
         <button class="btn-acao btn-tem-contato" onclick="abrirForm('${t.id_revisita}','tem_contato')">📞 Tem contato</button>
         <button class="btn-acao btn-sem-contato" onclick="abrirForm('${t.id_revisita}','sem_contato')">🔍 Sem contato</button>
         <button class="btn-acao btn-recusou" onclick="abrirForm('${t.id_revisita}','recusou')">✕ Recusou de novo</button>
       </div>
-      <button class="btn-pitch" onclick="gerarPitch('${t.id_revisita}', '${(t.cnpj||'').replace(/'/g,"")}', '${(t.posto||'').replace(/'/g,"")}', '${(t.status_lead||'').replace(/'/g,"")}')">💡 Gerar pitch personalizado</button>
-      <div id="pitch-${t.id_revisita}"></div>
+      ${botaoPitch}
 
       <div class="form-registro" id="form-${t.id_revisita}"></div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function abrirForm(id, tipo) {
@@ -185,8 +239,15 @@ function abrirForm(id, tipo) {
       <label>O que aconteceu na ligação?</label>
       <textarea id="obs-${id}" placeholder="Ex: Falei com o gerente, ficou de conversar com o dono e retornar."></textarea>
       <div class="checkbox-reuniao">
-        <input type="checkbox" id="reuniao-${id}">
-        <label style="margin:0;">Consegui agendar reunião pro time fechar</label>
+        <input type="checkbox" id="reuniao-${id}" onchange="toggleDataReuniao('${id}')">
+        <label style="margin:0;">Consegui agendar reunião pro BD retomar</label>
+      </div>
+      <div id="datahora-${id}" style="display:none;margin-top:10px;">
+        <label>Data e horário combinados</label>
+        <div style="display:flex;gap:8px;">
+          <input type="date" id="data-reuniao-${id}" class="finput-inline">
+          <input type="time" id="hora-reuniao-${id}" class="finput-inline">
+        </div>
       </div>`;
   } else if (tipo === 'sem_contato') {
     campos = `
@@ -207,30 +268,40 @@ function abrirForm(id, tipo) {
   if (tipo === 'sem_contato') buscarSocios(id);
 }
 
-function gerarPitch(id, cnpj, posto, status) {
+function gerarPitch(id, posto, bdOriginal, responsavel, ultimoComentario, diasDesde) {
   const box = document.getElementById('pitch-' + id);
-  box.innerHTML = '<div class="pitch-box">🤖 Gerando pitch personalizado...</div>';
+  box.innerHTML = '<div class="pitch-box">Gerando mensagem...</div>';
 
-  const params = new URLSearchParams({ action: 'gerar_pitch', cnpj, posto, status });
+  const params = new URLSearchParams({
+    action: 'gerar_pitch', posto, bd_original: bdOriginal, responsavel,
+    ultimo_comentario: ultimoComentario, dias_desde: diasDesde
+  });
   const cb = 'cbpitch_' + Date.now();
   window[cb] = function(resultado) {
     delete window[cb];
     const el = document.getElementById('jsonp-pitch');
     if (el) el.remove();
     if (!resultado || resultado.status !== 'ok') {
-      box.innerHTML = '<div class="pitch-box">⚠️ Não consegui gerar o pitch: ' + (resultado && resultado.msg || 'erro desconhecido') + '</div>';
+      box.innerHTML = '<div class="pitch-box">Não consegui gerar a mensagem: ' + (resultado && resultado.msg || 'erro desconhecido') + '</div>';
       return;
     }
-    box.innerHTML = '<div class="pitch-box"><b>💡 Pitch sugerido:</b><br>' + resultado.pitch.replace(/\n/g, '<br>') + '</div>';
+    const textoEscapado = resultado.pitch.replace(/"/g, '&quot;');
+    box.innerHTML = '<div class="pitch-box"><p class="pitch-label">Mensagem pronta</p><p id="pitch-texto-' + id + '" style="white-space:pre-wrap;">' + resultado.pitch + '</p>' +
+      '<button class="btn-copiar" onclick="copiarPitch(\'' + id + '\')">Copiar mensagem</button></div>';
   };
   const s = document.createElement('script');
   s.id = 'jsonp-pitch';
   s.onerror = function() {
     delete window[cb];
-    box.innerHTML = '<div class="pitch-box">⚠️ Erro ao buscar o pitch.</div>';
+    box.innerHTML = '<div class="pitch-box">Erro ao buscar a mensagem.</div>';
   };
   s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
   document.head.appendChild(s);
+}
+
+function copiarPitch(id) {
+  const texto = document.getElementById('pitch-texto-' + id).innerText;
+  navigator.clipboard.writeText(texto).then(() => alert('Mensagem copiada!'));
 }
 
 async function buscarSocios(id) {
@@ -253,6 +324,11 @@ async function buscarSocios(id) {
   }
 }
 
+function toggleDataReuniao(id) {
+  const checked = document.getElementById('reuniao-' + id).checked;
+  document.getElementById('datahora-' + id).style.display = checked ? 'block' : 'none';
+}
+
 function salvarTentativa(id, tipo) {
   const quem = document.getElementById('quem-sou').value;
   if (!quem) { alert('Selecione quem você é lá em cima antes de registrar.'); return; }
@@ -260,13 +336,22 @@ function salvarTentativa(id, tipo) {
   const reuniaoEl = document.getElementById('reuniao-' + id);
   const reuniao = reuniaoEl && reuniaoEl.checked ? 'S' : 'Nao';
 
+  let dataReuniao = '', horaReuniao = '';
+  if (reuniao === 'S') {
+    dataReuniao = document.getElementById('data-reuniao-' + id).value;
+    horaReuniao = document.getElementById('hora-reuniao-' + id).value;
+    if (!dataReuniao || !horaReuniao) { alert('Preenche a data e o horário combinados antes de salvar.'); return; }
+  }
+
   const params = new URLSearchParams({
     action: 'registrar_tentativa',
     id_revisita: id,
     resultado: tipo,
     quem: quem,
     observacao: obs,
-    reuniao_agendada: reuniao
+    reuniao_agendada: reuniao,
+    data_reuniao: dataReuniao,
+    hora_reuniao: horaReuniao
   });
 
   const cb = 'cbsalvar_' + Date.now();
@@ -276,7 +361,7 @@ function salvarTentativa(id, tipo) {
     if (el) el.remove();
     if (!resultado || resultado.status !== 'ok') { alert('O script retornou um erro: ' + (resultado && resultado.msg || 'desconhecido')); return; }
     ligacoesHoje++;
-    if (reuniao === 'S') reunioesHoje++;
+    if (reuniao === 'S') { reunioesHoje++; carregarReunioes(); }
     document.getElementById('meta-ligacoes').textContent = ligacoesHoje;
     document.getElementById('meta-reunioes').textContent = reunioesHoje;
     const card = document.getElementById('card-' + id);
