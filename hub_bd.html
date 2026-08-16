@@ -27,6 +27,9 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .menu-card.visita{border-left:6px solid var(--verde);}
 .menu-card.tarefas{border-left:6px solid var(--laranja);}
 .menu-card.reporte{border-left:6px solid var(--amarelo);}
+.menu-card.farol{border-left:6px solid var(--amarelo);}
+.menu-card.termos{border-left:6px solid var(--verde);}
+.menu-card.assinaturas{border-left:6px solid var(--laranja);}
 .menu-card.brevemente{opacity:.45;cursor:not-allowed;border-left:6px solid var(--borda);}
 .menu-card-icone{margin-bottom:12px;color:var(--amarelo);}
 .menu-card-titulo{font-weight:800;font-size:16px;margin-bottom:4px;}
@@ -68,26 +71,23 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
       <div class="tag-em-breve">Em breve</div>
     </div>
 
-    <div class="menu-card brevemente">
+    <a class="menu-card farol" id="link-farol" href="#">
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2.5 2.5"/></svg></div>
       <div class="menu-card-titulo">Farol de Metas</div>
       <div class="menu-card-sub">Acompanhamento da sua meta no mês</div>
-      <div class="tag-em-breve">Em breve</div>
-    </div>
+    </a>
 
-    <div class="menu-card brevemente">
+    <a class="menu-card termos" id="link-termos" href="#">
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg></div>
       <div class="menu-card-titulo">Meus Termos</div>
       <div class="menu-card-sub">Termos assinados, data e sócio responsável</div>
-      <div class="tag-em-breve">Em breve</div>
-    </div>
+    </a>
 
-    <div class="menu-card brevemente">
+    <a class="menu-card assinaturas" id="link-assinaturas" href="#">
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
       <div class="menu-card-titulo">Consulta de Assinaturas</div>
       <div class="menu-card-sub">Quem assinou, quando, e onde travou no funil</div>
-      <div class="tag-em-breve">Em breve</div>
-    </div>
+    </a>
 
   </div>
 </div>
@@ -99,6 +99,9 @@ window.onload = function() {
   const sufixo = nome ? ('?nome=' + encodeURIComponent(nome)) : '';
   document.getElementById('link-visita').href = 'registrar_visita.html' + sufixo;
   document.getElementById('link-tarefas').href = 'tarefas_bd.html' + sufixo;
+  document.getElementById('link-farol').href = 'farol_metas.html' + sufixo;
+  document.getElementById('link-termos').href = 'meus_termos.html' + sufixo;
+  document.getElementById('link-assinaturas').href = 'consulta_assinaturas.html' + sufixo;
 };
 </script>
 </body>
