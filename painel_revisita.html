@@ -20,7 +20,7 @@ body.travado{overflow:hidden;}
 .topbar-title{font-weight:800;font-size:16px;color:var(--preto);line-height:1.1;}
 .topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
 
-.container{max-width:820px;margin:0 auto;padding:20px 16px 60px;}
+.container{max-width:1200px;margin:0 auto;padding:20px 24px 60px;}
 
 /* SELETOR DE QUEM SOU EU */
 .quem-sou{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
@@ -63,7 +63,7 @@ body.travado{overflow:hidden;}
 .meta-valor{font-size:24px;font-weight:800;color:var(--amarelo);}
 
 /* CARD DE LEAD (lista compacta) */
-.lead-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:4px solid var(--laranja);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;}
+.lead-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:5px solid var(--laranja);border-radius:var(--radius);padding:22px 26px;margin-bottom:16px;}
 .lead-card.card-concluido{border-left-color:var(--verde);}
 .lead-card.card-sem-retorno{border-left-color:var(--vermelho);}
 .lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
@@ -115,11 +115,15 @@ body.travado{overflow:hidden;}
 /* MODO FOCO */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
 .modal-overlay.show{display:flex;}
-.modal-card{background:var(--cinza-escuro);border:2px solid var(--amarelo);border-radius:14px;padding:20px 22px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.6);}
+.modal-card{background:var(--cinza-escuro);border:2px solid var(--laranja);border-radius:14px;padding:26px 30px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.6);}
+.modal-card.cor-verde{border-color:var(--verde);}
+.modal-card.cor-vermelho{border-color:var(--vermelho);}
+.modal-card.cor-laranja{border-color:var(--laranja);}
 .modal-fechar{float:right;font-size:18px;color:var(--texto-claro);cursor:pointer;background:none;border:none;line-height:1;}
 
 .empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
 .empty-icon{font-size:30px;margin-bottom:10px;}
+#quem-sou-wrap{display:none !important;}
 .loading{text-align:center;padding:50px 20px;color:var(--texto-claro);}
 </style>
 </head>
@@ -149,7 +153,7 @@ body.travado{overflow:hidden;}
   <!-- ═══ VIEW: MENU ═══ -->
   <div id="view-menu">
     <div class="menu-titulo">
-      <div class="ola" id="menu-ola">Olá</div>
+      <div class="ola" id="menu-ola">Fila de Revisita</div>
       <div class="sub">O que você quer ver?</div>
     </div>
     <div class="menu-cards">
@@ -225,7 +229,6 @@ let quemAtual = '';
 function salvarQuem() {
   quemAtual = document.getElementById('quem-sou').value;
   localStorage.setItem('revisita_quem', quemAtual);
-  document.getElementById('menu-ola').textContent = quemAtual ? ('Olá, ' + quemAtual) : 'Olá';
   if (quemAtual) carregarResumo();
 }
 
@@ -241,7 +244,6 @@ window.onload = function() {
     if (salvo) document.getElementById('quem-sou').value = salvo;
   }
   quemAtual = document.getElementById('quem-sou').value;
-  document.getElementById('menu-ola').textContent = quemAtual ? ('Olá, ' + quemAtual) : 'Olá';
   if (quemAtual) carregarResumo();
 };
 
@@ -380,8 +382,6 @@ function renderizarLista() {
     const temContato = info.prioridade === 0;
     const comentarioBox = t.ultimo_comentario ? `
       <div class="comentario-box">Contexto da visita (${t.bd_original}, aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
-    const telefoneBox = t.contato_bd ? `
-      <div class="telefone-box">📞 Contato registrado pelo BD: ${contatoLink(t)}</div>` : '';
     return `
     <div class="lead-card ${claseCor}" id="card-${t.id_revisita}">
       <div class="lead-top">
@@ -393,7 +393,6 @@ function renderizarLista() {
       <div class="lead-meta">Tentativas anteriores: <b>${t.tentativas}</b>${t.quem_ultima_tentativa ? ' · última por ' + t.quem_ultima_tentativa + ' em ' + t.data_ultima_tentativa : ''}</div>
       <span class="lead-dias">${t.dias_na_fila} dia(s) na fila</span>
       ${comentarioBox}
-      ${telefoneBox}
 
       <div class="acoes">
         <button class="btn-acao btn-tem-contato" onclick="abrirFoco('${t.id_revisita}','tem_contato')">📞 Tem contato</button>
@@ -560,6 +559,7 @@ function abrirFoco(id, tipo) {
       <button class="btn-cancelar" onclick="fecharFoco()">Cancelar</button>
     </div>
   `;
+  document.getElementById('modal-card').className = 'modal-card cor-' + info.cor;
 
   document.getElementById('modal-overlay').classList.add('show');
   document.body.classList.add('travado');
