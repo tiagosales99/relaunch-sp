@@ -318,7 +318,12 @@ async function buscarSocios(id) {
       box.innerHTML = '⚠️ Nenhum sócio encontrado pra esse CNPJ na base pública.';
       return;
     }
-    box.innerHTML = '<b>Sócios encontrados:</b><br>' + socios.map(s => `• ${s.nome_socio || s.nome} (${s.qualificacao_socio || s.qual || ''})`).join('<br>');
+    box.innerHTML = '<b>Sócios encontrados:</b><br>' + socios.map(s => {
+      const nome = s.nome_socio || s.nome || '';
+      const qual = s.qualificacao_socio || s.qual || '';
+      const link = 'https://cnpjtransparencia.com.br/socio/?nome=' + encodeURIComponent(nome);
+      return `• ${nome} (${qual}) — <a href="${link}" target="_blank" style="color:#FFD600;">buscar outros negócios ↗</a>`;
+    }).join('<br>');
   } catch (e) {
     box.innerHTML = '⚠️ Não consegui buscar os sócios agora. Pesquisa manual mesmo.';
   }
