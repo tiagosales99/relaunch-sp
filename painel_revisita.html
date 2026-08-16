@@ -59,6 +59,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .socios-box{background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6;color:var(--branco);}
 .comentario-box{background:#1C2A1C;border:1px solid #3A4A3A;border-radius:8px;padding:8px 12px;font-size:11px;color:#B0B8B0;margin:8px 0;}
 .finput-inline{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:12px;padding:8px 10px;}
+.btn-buscar-base{width:100%;margin-top:8px;margin-bottom:10px;background:var(--cinza-medio);border:1.5px solid var(--amarelo);color:var(--amarelo);border-radius:8px;padding:9px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
 .btn-pitch{width:100%;margin-top:10px;background:linear-gradient(90deg,#7B3FE4,#5C2FB8);color:var(--branco);border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
 .pitch-box{margin-top:10px;background:#211A33;border:1.5px solid #5C2FB8;border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.7;color:var(--branco);}
 .pitch-label{font-size:10px;color:#B8A8E0;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px;}
@@ -252,6 +253,10 @@ function abrirForm(id, tipo) {
   } else if (tipo === 'sem_contato') {
     campos = `
       <div id="socios-${id}" class="socios-box">🔍 Buscando sócios desse CNPJ...</div>
+      <label>CNPJs encontrados no site externo (cole aqui, separados por vírgula)</label>
+      <input type="text" id="cnpjs-externos-${id}" class="finput-inline" style="width:100%;" placeholder="Ex: 12345678000199, 98765432000188">
+      <button type="button" class="btn-buscar-base" onclick="buscarCnpjsNaBase('${id}')">Buscar na nossa base</button>
+      <div id="resultado-cnpjs-${id}"></div>
       <label>O que você encontrou pesquisando os sócios?</label>
       <textarea id="obs-${id}" placeholder="Ex: Achei outro posto do mesmo sócio em Y, tentando esse canal agora."></textarea>`;
   } else {
@@ -302,6 +307,42 @@ function gerarPitch(id, posto, bdOriginal, responsavel, ultimoComentario, diasDe
 function copiarPitch(id) {
   const texto = document.getElementById('pitch-texto-' + id).innerText;
   navigator.clipboard.writeText(texto).then(() => alert('Mensagem copiada!'));
+}
+
+function buscarCnpjsNaBase(id) {
+  const input = document.getElementById('cnpjs-externos-' + id).value.trim();
+  const resultBox = document.getElementById('resultado-cnpjs-' + id);
+  if (!input) { resultBox.innerHTML = '<div class="socios-box">Cola pelo menos um CNPJ antes de buscar.</div>'; return; }
+
+  resultBox.innerHTML = '<div class="socios-box">🔍 Cruzando com nossa base...</div>';
+
+  const params = new URLSearchParams({ action: 'buscar_cnpjs_base', cnpjs: input });
+  const cb = 'cbbase_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-base');
+    if (el) el.remove();
+    if (!resultado || resultado.status !== 'ok') {
+      resultBox.innerHTML = '<div class="socios-box">Erro: ' + (resultado && resultado.msg || 'desconhecido') + '</div>';
+      return;
+    }
+    resultBox.innerHTML = resultado.resultados.map(r => {
+      if (!r.encontrado) return `<div class="socios-box">CNPJ ${r.cnpj}: não encontrado na nossa base.</div>`;
+      return `<div class="socios-box">
+        <b>CNPJ ${r.cnpj} — ${r.posto}</b><br>
+        BD: ${r.bd} · Status: ${r.status}<br>
+        ${r.ultimo_comentario ? 'Último comentário: "' + r.ultimo_comentario + '"' : 'Sem comentário registrado.'}
+      </div>`;
+    }).join('');
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-base';
+  s.onerror = function() {
+    delete window[cb];
+    resultBox.innerHTML = '<div class="socios-box">Erro ao buscar. Tenta de novo.</div>';
+  };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
 }
 
 async function buscarSocios(id) {
