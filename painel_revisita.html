@@ -343,6 +343,14 @@ function carregarFila() {
 // Para "Ex parceiro 99" (que não carrega "com contato"/"sem contato" no
 // próprio texto do status), usa o contato do decisor registrado na
 // Forms W_2 (coluna L) pra decidir se entra no card verde ou vermelho. ──
+// ── Formata dias em texto legível: dias soltos até 6, semanas a partir de 7 ──
+function formatarDias(dias) {
+  if (dias === null || dias === undefined || isNaN(dias)) return '';
+  if (dias < 7) return dias + ' dia' + (dias === 1 ? '' : 's');
+  const semanas = Math.floor(dias / 7);
+  return semanas + ' semana' + (semanas === 1 ? '' : 's');
+}
+
 function statusInfo(t) {
   const s = (t.status_lead || '').toLowerCase();
   if (s.includes('com contato')) return { cor: 'verde', classe: 'status-verde', prioridade: 0 };
@@ -380,8 +388,9 @@ function renderizarLista() {
     const info = statusInfo(t);
     const claseCor = info.cor === 'verde' ? 'cor-verde' : info.cor === 'vermelho' ? 'cor-vermelho' : '';
     const temContato = info.prioridade === 0;
+    const diasContato = t.dias_desde_contato != null ? t.dias_desde_contato : t.dias_na_fila;
     const comentarioBox = t.ultimo_comentario ? `
-      <div class="comentario-box">Contexto da visita (${t.bd_original}, aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
+      <div class="comentario-box">Contexto da visita (${t.bd_original}, há ${formatarDias(diasContato)}): "${t.ultimo_comentario}"</div>` : '';
     return `
     <div class="lead-card ${claseCor}" id="card-${t.id_revisita}">
       <div class="lead-top">
@@ -538,8 +547,9 @@ function abrirFoco(id, tipo) {
   }
 
   const info = statusInfo(t);
+  const diasContatoModal = t.dias_desde_contato != null ? t.dias_desde_contato : t.dias_na_fila;
   const comentarioBox = t.ultimo_comentario ? `
-    <div class="comentario-box">Contexto da visita (${t.bd_original}, aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
+    <div class="comentario-box">Contexto da visita (${t.bd_original}, há ${formatarDias(diasContatoModal)}): "${t.ultimo_comentario}"</div>` : '';
   const telefoneBox = t.contato_bd ? `
     <div class="telefone-box">📞 Contato registrado pelo BD: ${contatoLink(t)}</div>` : '';
 
