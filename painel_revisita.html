@@ -31,15 +31,15 @@ body.travado{overflow:hidden;}
 .menu-titulo{text-align:center;margin-bottom:24px;}
 .menu-titulo .ola{font-weight:800;font-size:16px;}
 .menu-titulo .sub{font-size:12px;color:var(--texto-claro);margin-top:2px;}
-.menu-cards{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:0 auto;}
-.menu-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-radius:var(--radius);padding:16px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:border-color .15s;}
+.menu-cards{display:flex;flex-direction:column;gap:14px;max-width:460px;margin:0 auto;}
+.menu-card{background:var(--cinza-escuro);border:2px solid var(--borda);border-radius:14px;padding:24px 26px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:border-color .15s;}
 .menu-card:hover{border-color:var(--amarelo);}
-.menu-card.pendentes{border-left:4px solid var(--laranja);}
-.menu-card.concluidos{border-left:4px solid var(--verde);}
-.menu-card.semretorno{border-left:4px solid var(--vermelho);}
-.menu-card-titulo{font-weight:800;font-size:14px;}
-.menu-card-sub{font-size:11px;color:var(--texto-claro);margin-top:2px;}
-.menu-card-num{font-weight:800;font-size:16px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.menu-card.pendentes{border-left:6px solid var(--laranja);}
+.menu-card.concluidos{border-left:6px solid var(--verde);}
+.menu-card.semretorno{border-left:6px solid var(--vermelho);}
+.menu-card-titulo{font-weight:800;font-size:18px;}
+.menu-card-sub{font-size:13px;color:var(--texto-claro);margin-top:3px;}
+.menu-card-num{font-weight:800;font-size:20px;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .pendentes .menu-card-num{background:var(--laranja);color:#3D2A00;}
 .concluidos .menu-card-num{background:var(--verde);color:#00280F;}
 .semretorno .menu-card-num{background:var(--vermelho);color:#3D0000;}
@@ -67,6 +67,14 @@ body.travado{overflow:hidden;}
 .lead-card.card-concluido{border-left-color:var(--verde);}
 .lead-card.card-sem-retorno{border-left-color:var(--vermelho);}
 .lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.lead-card.cor-verde{border-left-color:var(--verde);}
+.lead-card.cor-vermelho{border-left-color:var(--vermelho);}
+.status-verde{color:var(--verde);}
+.status-amarelo{color:var(--laranja);}
+.status-vermelho{color:var(--vermelho);}
+.subopcoes{display:flex;gap:8px;margin:10px 0;}
+.btn-subopcao{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);color:var(--branco);text-align:center;padding:11px;border-radius:8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.btn-subopcao.ativo{border-color:var(--amarelo);color:var(--amarelo);}
 .lead-posto{font-weight:800;font-size:15px;}
 .lead-prio{font-size:10px;font-weight:800;padding:3px 10px;border-radius:12px;background:#3D2A00;color:var(--laranja);white-space:nowrap;}
 .lead-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
@@ -128,7 +136,7 @@ body.travado{overflow:hidden;}
 
 <div class="container">
 
-  <div class="quem-sou">
+  <div class="quem-sou" id="quem-sou-wrap">
     <label>Quem é você?</label>
     <select id="quem-sou" onchange="salvarQuem()">
       <option value="">Selecione</option>
@@ -244,6 +252,8 @@ function mostrarView(nome) {
   if (!quemAtual) quemAtual = document.getElementById('quem-sou').value;
   if (!quemAtual && nome !== 'menu') { alert('Selecione seu nome ali em cima primeiro.'); nome = 'menu'; }
 
+  document.getElementById('quem-sou-wrap').style.display = (nome === 'menu') ? 'flex' : 'none';
+
   if (nome === 'menu') {
     document.getElementById('view-menu').style.display = 'block';
     carregarResumo();
@@ -326,30 +336,43 @@ function carregarFila() {
   document.head.appendChild(s);
 }
 
+function statusInfo(status) {
+  const s = (status || '').toLowerCase();
+  if (s.includes('com contato')) return { cor: 'verde', classe: 'status-verde', prioridade: 0 };
+  if (s.includes('decisor oculto')) return { cor: 'laranja', classe: 'status-amarelo', prioridade: 1 };
+  if (s.includes('sem contato')) return { cor: 'vermelho', classe: 'status-vermelho', prioridade: 2 };
+  return { cor: 'laranja', classe: '', prioridade: 3 };
+}
+
 function renderizarLista() {
   const container = document.getElementById('lista-leads');
   if (!filaAtual.length) {
     container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>Nenhum lead na fila de revisita agora.</div>';
     return;
   }
-  container.innerHTML = filaAtual.map(t => {
+  const ordenada = [...filaAtual].sort((a,b) => statusInfo(a.status_lead).prioridade - statusInfo(b.status_lead).prioridade);
+
+  container.innerHTML = ordenada.map(t => {
+    const info = statusInfo(t.status_lead);
+    const claseCor = info.cor === 'verde' ? 'cor-verde' : info.cor === 'vermelho' ? 'cor-vermelho' : '';
+    const temContato = info.prioridade === 0;
     const comentarioBox = t.ultimo_comentario ? `
       <div class="comentario-box">Último comentário do ${t.bd_original} (aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
     return `
-    <div class="lead-card" id="card-${t.id_revisita}">
+    <div class="lead-card ${claseCor}" id="card-${t.id_revisita}">
       <div class="lead-top">
         <div class="lead-posto">${t.posto || 'Posto não informado'}</div>
         <div class="lead-prio">Grid ${t.prioridade_grid || '-'}</div>
       </div>
       <div class="lead-meta">CNPJ: <b>${t.cnpj}</b></div>
-      <div class="lead-meta">Status: <b>${t.status_lead}</b> · BD original: <b>${t.bd_original}</b></div>
+      <div class="lead-meta">Status: <b class="${info.classe}">${t.status_lead}</b> · BD original: <b>${t.bd_original}</b></div>
       <div class="lead-meta">Tentativas anteriores: <b>${t.tentativas}</b>${t.quem_ultima_tentativa ? ' · última por ' + t.quem_ultima_tentativa + ' em ' + t.data_ultima_tentativa : ''}</div>
       <span class="lead-dias">${t.dias_na_fila} dia(s) na fila</span>
       ${comentarioBox}
 
       <div class="acoes">
         <button class="btn-acao btn-tem-contato" onclick="abrirFoco('${t.id_revisita}','tem_contato')">📞 Tem contato</button>
-        <button class="btn-acao btn-sem-contato" onclick="abrirFoco('${t.id_revisita}','sem_contato')">🔍 Sem contato</button>
+        ${temContato ? '' : `<button class="btn-acao btn-sem-contato" onclick="abrirFoco('${t.id_revisita}','sem_contato')">🔍 Sem contato</button>`}
         <button class="btn-acao btn-recusou" onclick="abrirFoco('${t.id_revisita}','recusou')">✕ Recusou de novo</button>
       </div>
     </div>
@@ -452,11 +475,20 @@ function abrirFoco(id, tipo) {
   let campos = '';
   if (tipo === 'tem_contato') {
     campos = `
+      <div class="subopcoes">
+        <button type="button" class="btn-subopcao ativo" id="btn-ligar-${id}" onclick="escolherModoContato('${id}','ligar')">📞 Ligar</button>
+        <button type="button" class="btn-subopcao" id="btn-whatsapp-${id}" onclick="escolherModoContato('${id}','whatsapp')">💬 Enviar WhatsApp</button>
+      </div>
+      <div id="whatsapp-box-${id}" style="display:none;"><div id="pitch-${id}"></div></div>
       <label>O que aconteceu na ligação?</label>
       <textarea id="obs-${id}" placeholder="Ex: Falei com o gerente, ficou de conversar com o dono e retornar."></textarea>
       <div class="checkbox-reuniao">
-        <input type="checkbox" id="reuniao-${id}" onchange="toggleDataReuniao('${id}')">
+        <input type="radio" name="reuniao-radio-${id}" id="reuniao-sim-${id}" onchange="toggleDataReuniao('${id}')">
         <label style="margin:0;">Consegui agendar reunião pro BD retomar</label>
+      </div>
+      <div class="checkbox-reuniao">
+        <input type="radio" name="reuniao-radio-${id}" id="reuniao-nao-${id}" onchange="toggleDataReuniao('${id}')">
+        <label style="margin:0;">Não consegui agendamento</label>
       </div>
       <div id="datahora-${id}" style="display:none;margin-top:10px;">
         <label>Data e horário combinados</label>
@@ -481,10 +513,7 @@ function abrirFoco(id, tipo) {
       <textarea id="obs-${id}" placeholder="Ex: Disse que já tem outro app parceiro e não quer trocar agora."></textarea>`;
   }
 
-  const temContato = String(t.status_lead || '').toLowerCase().includes('com contato');
-  const botaoPitch = temContato ? `
-    <button class="btn-pitch" onclick="gerarPitch('${t.id_revisita}', '${(t.posto||'').replace(/'/g,"")}', '${(t.bd_original||'').replace(/'/g,"")}', '${(t.responsavel||'').replace(/'/g,"")}', '${(t.ultimo_comentario||'').replace(/'/g,"").replace(/\n/g,' ')}', '${t.dias_na_fila}')">Gerar mensagem para WhatsApp</button>
-    <div id="pitch-${t.id_revisita}"></div>` : '';
+  const info = statusInfo(t.status_lead);
   const comentarioBox = t.ultimo_comentario ? `
     <div class="comentario-box">Último comentário do ${t.bd_original} (aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
 
@@ -495,9 +524,8 @@ function abrirFoco(id, tipo) {
       <div class="lead-prio">Grid ${t.prioridade_grid || '-'}</div>
     </div>
     <div class="lead-meta">CNPJ: <b>${t.cnpj}</b></div>
-    <div class="lead-meta">Status: <b>${t.status_lead}</b> · BD original: <b>${t.bd_original}</b></div>
+    <div class="lead-meta">Status: <b class="${info.classe}">${t.status_lead}</b> · BD original: <b>${t.bd_original}</b></div>
     ${comentarioBox}
-    ${botaoPitch}
     <div class="form-registro">
       ${campos}
       <button class="btn-salvar" onclick="salvarTentativa('${id}','${tipo}')">Salvar</button>
@@ -515,6 +543,22 @@ function fecharFoco() {
   document.getElementById('modal-overlay').classList.remove('show');
   document.getElementById('modal-card').innerHTML = '';
   document.body.classList.remove('travado');
+}
+
+function escolherModoContato(id, modo) {
+  document.getElementById('btn-ligar-' + id).classList.toggle('ativo', modo === 'ligar');
+  document.getElementById('btn-whatsapp-' + id).classList.toggle('ativo', modo === 'whatsapp');
+  const box = document.getElementById('whatsapp-box-' + id);
+  if (modo === 'whatsapp') {
+    box.style.display = 'block';
+    if (!box.dataset.gerado) {
+      box.dataset.gerado = '1';
+      const t = filaAtual.find(l => l.id_revisita === id);
+      if (t) gerarPitch(id, (t.posto||''), (t.bd_original||''), (t.responsavel||''), (t.ultimo_comentario||''), t.dias_na_fila);
+    }
+  } else {
+    box.style.display = 'none';
+  }
 }
 
 // ── GERAR PITCH ───────────────────────────────────────────────
@@ -617,7 +661,7 @@ async function buscarSocios(id) {
 }
 
 function toggleDataReuniao(id) {
-  const checked = document.getElementById('reuniao-' + id).checked;
+  const checked = document.getElementById('reuniao-sim-' + id).checked;
   document.getElementById('datahora-' + id).style.display = checked ? 'block' : 'none';
 }
 
@@ -626,7 +670,7 @@ function salvarTentativa(id, tipo) {
   const quem = quemAtual || document.getElementById('quem-sou').value;
   if (!quem) { alert('Selecione quem você é lá em cima antes de registrar.'); return; }
   const obs = document.getElementById('obs-' + id).value.trim();
-  const reuniaoEl = document.getElementById('reuniao-' + id);
+  const reuniaoEl = document.getElementById('reuniao-sim-' + id);
   const reuniao = reuniaoEl && reuniaoEl.checked ? 'S' : 'Nao';
 
   let dataReuniao = '', horaReuniao = '';
