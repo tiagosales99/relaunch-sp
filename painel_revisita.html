@@ -13,6 +13,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);color:var(--branco);min-height:100vh;}
+body.travado{overflow:hidden;}
 .topbar{background:var(--amarelo);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
 .topbar-brand{display:flex;align-items:center;gap:10px;}
 .topbar-logo{width:34px;height:34px;background:var(--preto);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--amarelo);}
@@ -26,6 +27,30 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .quem-sou label{font-size:11px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;}
 .quem-sou select{background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;padding:8px 14px;outline:none;}
 
+/* MENU DE SEÇÕES */
+.menu-titulo{text-align:center;margin-bottom:24px;}
+.menu-titulo .ola{font-weight:800;font-size:16px;}
+.menu-titulo .sub{font-size:12px;color:var(--texto-claro);margin-top:2px;}
+.menu-cards{display:flex;flex-direction:column;gap:12px;max-width:400px;margin:0 auto;}
+.menu-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-radius:var(--radius);padding:16px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:border-color .15s;}
+.menu-card:hover{border-color:var(--amarelo);}
+.menu-card.pendentes{border-left:4px solid var(--laranja);}
+.menu-card.concluidos{border-left:4px solid var(--verde);}
+.menu-card.semretorno{border-left:4px solid var(--vermelho);}
+.menu-card-titulo{font-weight:800;font-size:14px;}
+.menu-card-sub{font-size:11px;color:var(--texto-claro);margin-top:2px;}
+.menu-card-num{font-weight:800;font-size:16px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pendentes .menu-card-num{background:var(--laranja);color:#3D2A00;}
+.concluidos .menu-card-num{background:var(--verde);color:#00280F;}
+.semretorno .menu-card-num{background:var(--vermelho);color:#3D0000;}
+
+/* VOLTAR */
+.header-secao{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.btn-voltar{font-size:16px;color:var(--texto-claro);cursor:pointer;background:none;border:none;padding:4px;}
+.header-secao-titulo{font-weight:800;font-size:16px;}
+.header-secao-sub{font-size:11px;color:var(--texto-claro);}
+.secao-aviso{font-size:10.5px;color:#6E7A6E;margin:0 0 16px 34px;}
+
 /* META DO DIA */
 .meta-hoje{display:flex;gap:12px;margin-bottom:18px;}
 .reunioes-box{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-radius:var(--radius);padding:14px 16px;margin-bottom:18px;}
@@ -37,29 +62,37 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .meta-label{font-size:10px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
 .meta-valor{font-size:24px;font-weight:800;color:var(--amarelo);}
 
-/* CARD DE LEAD */
+/* CARD DE LEAD (lista compacta) */
 .lead-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:4px solid var(--laranja);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;}
+.lead-card.card-concluido{border-left-color:var(--verde);}
+.lead-card.card-sem-retorno{border-left-color:var(--vermelho);}
 .lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
 .lead-posto{font-weight:800;font-size:15px;}
 .lead-prio{font-size:10px;font-weight:800;padding:3px 10px;border-radius:12px;background:#3D2A00;color:var(--laranja);white-space:nowrap;}
 .lead-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
 .lead-meta b{color:var(--branco);}
 .lead-dias{display:inline-block;margin-top:6px;font-size:11px;font-weight:700;color:var(--vermelho);}
+.lead-hora{font-size:11px;font-weight:800;color:var(--verde);white-space:nowrap;}
 
 .acoes{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
 .btn-acao{flex:1;min-width:140px;border:none;border-radius:8px;padding:10px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
 .btn-tem-contato{background:var(--verde);color:var(--preto);}
 .btn-sem-contato{background:var(--cinza-medio);color:var(--branco);border:1.5px solid var(--borda);}
 .btn-recusou{background:var(--vermelho);color:var(--branco);}
+.btn-reativar{width:100%;margin-top:10px;background:var(--cinza-medio);border:1.5px solid var(--amarelo);color:var(--amarelo);border-radius:8px;padding:9px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
 
-/* FORM DE REGISTRO (aparece ao clicar numa ação) */
-.form-registro{display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--borda);}
-.form-registro.show{display:block;}
+/* FORM DE REGISTRO (dentro do modal de foco) */
+.form-registro{margin-top:14px;padding-top:14px;border-top:1px solid var(--borda);}
 .form-registro label{display:block;font-size:11px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;margin-top:10px;}
 .socios-box{background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6;color:var(--branco);}
 .comentario-box{background:#1C2A1C;border:1px solid #3A4A3A;border-radius:8px;padding:8px 12px;font-size:11px;color:#B0B8B0;margin:8px 0;}
 .finput-inline{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:12px;padding:8px 10px;}
-.btn-buscar-base{width:100%;margin-top:8px;margin-bottom:10px;background:var(--cinza-medio);border:1.5px solid var(--amarelo);color:var(--amarelo);border-radius:8px;padding:9px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.cnpj-busca-row{display:flex;gap:8px;margin:8px 0;}
+.cnpj-busca-row .finput-inline{margin:0;}
+.btn-buscar-base{flex-shrink:0;background:var(--amarelo);border:none;color:var(--preto);border-radius:8px;padding:0 16px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.resultado-achou{background:#0F2E20;border-left:3px solid var(--verde);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:11.5px;line-height:1.5;}
+.resultado-achou b{color:var(--branco);font-size:12.5px;}
+.resultado-nao-achou{padding:4px 2px;margin-bottom:2px;font-size:11px;color:var(--texto-claro);}
 .btn-pitch{width:100%;margin-top:10px;background:linear-gradient(90deg,#7B3FE4,#5C2FB8);color:var(--branco);border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
 .pitch-box{margin-top:10px;background:#211A33;border:1.5px solid #5C2FB8;border-radius:8px;padding:12px 14px;font-size:12px;line-height:1.7;color:var(--branco);}
 .pitch-label{font-size:10px;color:#B8A8E0;text-transform:uppercase;letter-spacing:.4px;margin:0 0 8px;}
@@ -69,6 +102,12 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .checkbox-reuniao input{width:16px;height:16px;}
 .btn-salvar{margin-top:12px;width:100%;background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
 .btn-cancelar{margin-top:6px;width:100%;background:none;color:var(--texto-claro);border:none;padding:6px;font-family:'Montserrat',sans-serif;font-size:11px;cursor:pointer;}
+
+/* MODO FOCO */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.modal-overlay.show{display:flex;}
+.modal-card{background:var(--cinza-escuro);border:2px solid var(--amarelo);border-radius:14px;padding:20px 22px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 12px 40px rgba(0,0,0,0.6);}
+.modal-fechar{float:right;font-size:18px;color:var(--texto-claro);cursor:pointer;background:none;border:none;line-height:1;}
 
 .empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
 .empty-icon{font-size:30px;margin-bottom:10px;}
@@ -98,19 +137,73 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
     </select>
   </div>
 
-  <div class="meta-hoje">
-    <div class="meta-card"><div class="meta-label">Ligações hoje</div><div class="meta-valor" id="meta-ligacoes">0</div></div>
-    <div class="meta-card"><div class="meta-label">Reuniões agendadas</div><div class="meta-valor" id="meta-reunioes">0</div></div>
-    <div class="meta-card"><div class="meta-label">Na fila</div><div class="meta-valor" id="meta-fila">-</div></div>
+  <!-- ═══ VIEW: MENU ═══ -->
+  <div id="view-menu">
+    <div class="menu-titulo">
+      <div class="ola" id="menu-ola">Olá</div>
+      <div class="sub">O que você quer ver?</div>
+    </div>
+    <div class="menu-cards">
+      <div class="menu-card pendentes" onclick="mostrarView('pendentes')">
+        <div><div class="menu-card-titulo">Visitas pendentes</div><div class="menu-card-sub">Leads aguardando ação</div></div>
+        <div class="menu-card-num" id="num-pendentes">-</div>
+      </div>
+      <div class="menu-card concluidos" onclick="mostrarView('concluidos')">
+        <div><div class="menu-card-titulo">Concluídos / Agendados</div><div class="menu-card-sub">Reuniões marcadas</div></div>
+        <div class="menu-card-num" id="num-concluidos">-</div>
+      </div>
+      <div class="menu-card semretorno" onclick="mostrarView('sem_retorno')">
+        <div><div class="menu-card-titulo">Sem retorno</div><div class="menu-card-sub">Esgotaram as tentativas</div></div>
+        <div class="menu-card-num" id="num-sem-retorno">-</div>
+      </div>
+    </div>
   </div>
 
-  <div class="reunioes-box" id="reunioes-box" style="display:none;">
-    <div class="reunioes-titulo">Próximas reuniões (14 dias)</div>
-    <div id="reunioes-lista"></div>
+  <!-- ═══ VIEW: PENDENTES ═══ -->
+  <div id="view-pendentes" style="display:none;">
+    <div class="header-secao">
+      <button class="btn-voltar" onclick="mostrarView('menu')">←</button>
+      <div><div class="header-secao-titulo">Visitas pendentes</div></div>
+    </div>
+
+    <div class="meta-hoje">
+      <div class="meta-card"><div class="meta-label">Ligações hoje</div><div class="meta-valor" id="meta-ligacoes">0</div></div>
+      <div class="meta-card"><div class="meta-label">Reuniões agendadas</div><div class="meta-valor" id="meta-reunioes">0</div></div>
+      <div class="meta-card"><div class="meta-label">Na fila</div><div class="meta-valor" id="meta-fila">-</div></div>
+    </div>
+
+    <div class="reunioes-box" id="reunioes-box" style="display:none;">
+      <div class="reunioes-titulo">Próximas reuniões (14 dias)</div>
+      <div id="reunioes-lista"></div>
+    </div>
+
+    <div id="lista-leads"><div class="loading">Carregando fila...</div></div>
   </div>
 
-  <div id="lista-leads"><div class="loading">Carregando fila...</div></div>
+  <!-- ═══ VIEW: CONCLUÍDOS ═══ -->
+  <div id="view-concluidos" style="display:none;">
+    <div class="header-secao">
+      <button class="btn-voltar" onclick="mostrarView('menu')">←</button>
+      <div><div class="header-secao-titulo">Concluídos / Agendados</div><div class="header-secao-sub" id="sub-concluidos"></div></div>
+    </div>
+    <div id="lista-concluidos"><div class="loading">Carregando...</div></div>
+  </div>
 
+  <!-- ═══ VIEW: SEM RETORNO ═══ -->
+  <div id="view-sem-retorno" style="display:none;">
+    <div class="header-secao">
+      <button class="btn-voltar" onclick="mostrarView('menu')">←</button>
+      <div><div class="header-secao-titulo">Sem retorno</div><div class="header-secao-sub" id="sub-sem-retorno"></div></div>
+    </div>
+    <div class="secao-aviso">Voltam sozinhos pra fila em 30 dias, ou reative na hora se souber de algo novo</div>
+    <div id="lista-sem-retorno"><div class="loading">Carregando...</div></div>
+  </div>
+
+</div>
+
+<!-- ═══ MODO FOCO (modal) ═══ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-card" id="modal-card"></div>
 </div>
 
 <script>
@@ -118,11 +211,15 @@ const SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKW
 
 let filaAtual = [];
 let ligacoesHoje = 0, reunioesHoje = 0;
+let quemAtual = '';
 
 function salvarQuem() {
-  localStorage.setItem('revisita_quem', document.getElementById('quem-sou').value);
-  carregarFila();
+  quemAtual = document.getElementById('quem-sou').value;
+  localStorage.setItem('revisita_quem', quemAtual);
+  document.getElementById('menu-ola').textContent = quemAtual ? ('Olá, ' + quemAtual) : 'Olá';
+  if (quemAtual) carregarResumo();
 }
+
 window.onload = function() {
   const params = new URLSearchParams(window.location.search);
   const nomeUrl = params.get('nome');
@@ -134,10 +231,54 @@ window.onload = function() {
     const salvo = localStorage.getItem('revisita_quem');
     if (salvo) document.getElementById('quem-sou').value = salvo;
   }
-  carregarFila();
-  carregarReunioes();
+  quemAtual = document.getElementById('quem-sou').value;
+  document.getElementById('menu-ola').textContent = quemAtual ? ('Olá, ' + quemAtual) : 'Olá';
+  if (quemAtual) carregarResumo();
 };
 
+// ── NAVEGAÇÃO ENTRE TELAS ──────────────────────────────────────
+function mostrarView(nome) {
+  ['menu','pendentes','concluidos','sem_retorno'].forEach(v => {
+    document.getElementById('view-' + (v === 'sem_retorno' ? 'sem-retorno' : v)).style.display = 'none';
+  });
+  if (!quemAtual) quemAtual = document.getElementById('quem-sou').value;
+  if (!quemAtual && nome !== 'menu') { alert('Selecione seu nome ali em cima primeiro.'); nome = 'menu'; }
+
+  if (nome === 'menu') {
+    document.getElementById('view-menu').style.display = 'block';
+    carregarResumo();
+  } else if (nome === 'pendentes') {
+    document.getElementById('view-pendentes').style.display = 'block';
+    carregarFila();
+    carregarReunioes();
+  } else if (nome === 'concluidos') {
+    document.getElementById('view-concluidos').style.display = 'block';
+    carregarConcluidos();
+  } else if (nome === 'sem_retorno') {
+    document.getElementById('view-sem-retorno').style.display = 'block';
+    carregarSemRetorno();
+  }
+}
+
+// ── RESUMO (contadores do menu) ────────────────────────────────
+function carregarResumo() {
+  const cb = 'cbresumo_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-resumo');
+    if (el) el.remove();
+    document.getElementById('num-pendentes').textContent = data.pendentes ?? '-';
+    document.getElementById('num-concluidos').textContent = data.concluidos ?? '-';
+    document.getElementById('num-sem-retorno').textContent = data.sem_retorno ?? '-';
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-resumo';
+  s.onerror = function() { delete window[cb]; };
+  s.src = SCRIPT_URL + '?tipo=resumo&responsavel=' + encodeURIComponent(quemAtual) + '&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
+
+// ── PRÓXIMAS REUNIÕES (dentro de Pendentes) ────────────────────
 function carregarReunioes() {
   const cb = 'cbreunioes_' + Date.now();
   window[cb] = function(data) {
@@ -161,13 +302,8 @@ function carregarReunioes() {
   document.head.appendChild(s);
 }
 
+// ── PENDENTES ───────────────────────────────────────────────────
 function carregarFila() {
-  const quem = document.getElementById('quem-sou').value;
-  if (!quem) {
-    document.getElementById('lista-leads').innerHTML = '<div class="empty"><div class="empty-icon">👋</div>Selecione seu nome ali em cima pra ver sua fila.</div>';
-    document.getElementById('meta-fila').textContent = '-';
-    return;
-  }
   document.getElementById('lista-leads').innerHTML = '<div class="loading">Carregando fila...</div>';
   const cb = 'cb_' + Date.now();
   window[cb] = function(data) {
@@ -186,7 +322,7 @@ function carregarFila() {
   };
   const old = document.getElementById('jsonp-script');
   if (old) old.remove();
-  s.src = SCRIPT_URL + '?tipo=revisita&responsavel=' + encodeURIComponent(quem) + '&callback=' + cb + '&t=' + Date.now();
+  s.src = SCRIPT_URL + '?tipo=revisita&responsavel=' + encodeURIComponent(quemAtual) + '&callback=' + cb + '&t=' + Date.now();
   document.head.appendChild(s);
 }
 
@@ -197,10 +333,6 @@ function renderizarLista() {
     return;
   }
   container.innerHTML = filaAtual.map(t => {
-    const temContato = String(t.status_lead || '').toLowerCase().includes('com contato');
-    const botaoPitch = temContato ? `
-      <button class="btn-pitch" onclick="gerarPitch('${t.id_revisita}', '${(t.posto||'').replace(/'/g,"")}', '${(t.bd_original||'').replace(/'/g,"")}', '${(t.responsavel||'').replace(/'/g,"")}', '${(t.ultimo_comentario||'').replace(/'/g,"").replace(/\n/g,' ')}', '${t.dias_na_fila}')">Gerar mensagem para WhatsApp</button>
-      <div id="pitch-${t.id_revisita}"></div>` : '';
     const comentarioBox = t.ultimo_comentario ? `
       <div class="comentario-box">Último comentário do ${t.bd_original} (aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
     return `
@@ -216,23 +348,106 @@ function renderizarLista() {
       ${comentarioBox}
 
       <div class="acoes">
-        <button class="btn-acao btn-tem-contato" onclick="abrirForm('${t.id_revisita}','tem_contato')">📞 Tem contato</button>
-        <button class="btn-acao btn-sem-contato" onclick="abrirForm('${t.id_revisita}','sem_contato')">🔍 Sem contato</button>
-        <button class="btn-acao btn-recusou" onclick="abrirForm('${t.id_revisita}','recusou')">✕ Recusou de novo</button>
+        <button class="btn-acao btn-tem-contato" onclick="abrirFoco('${t.id_revisita}','tem_contato')">📞 Tem contato</button>
+        <button class="btn-acao btn-sem-contato" onclick="abrirFoco('${t.id_revisita}','sem_contato')">🔍 Sem contato</button>
+        <button class="btn-acao btn-recusou" onclick="abrirFoco('${t.id_revisita}','recusou')">✕ Recusou de novo</button>
       </div>
-      ${botaoPitch}
-
-      <div class="form-registro" id="form-${t.id_revisita}"></div>
     </div>
   `;
   }).join('');
 }
 
-function abrirForm(id, tipo) {
-  const el = document.getElementById('form-' + id);
-  const jaAberto = el.classList.contains('show');
-  document.querySelectorAll('.form-registro').forEach(f => f.classList.remove('show'));
-  if (jaAberto) return;
+// ── CONCLUÍDOS / AGENDADOS ─────────────────────────────────────
+function formatarDataBr(dataIso) {
+  const partes = dataIso.split('-');
+  return partes.length === 3 ? partes[2] + '/' + partes[1] : dataIso;
+}
+
+function carregarConcluidos() {
+  document.getElementById('lista-concluidos').innerHTML = '<div class="loading">Carregando...</div>';
+  const cb = 'cbconc_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-conc');
+    if (el) el.remove();
+    const dados = Array.isArray(data) ? data : [];
+    document.getElementById('sub-concluidos').textContent = dados.length + ' reunião(ões) marcada(s) por você';
+    const container = document.getElementById('lista-concluidos');
+    if (!dados.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Nenhuma reunião marcada ainda.</div>'; return; }
+    container.innerHTML = dados.map(t => `
+      <div class="lead-card card-concluido">
+        <div class="lead-top">
+          <div class="lead-posto">${t.posto || 'Posto não informado'}</div>
+          <span class="lead-hora">${t.data_reuniao ? formatarDataBr(t.data_reuniao) + ' às ' + t.hora_reuniao : 'Sem horário registrado'}</span>
+        </div>
+        <div class="lead-meta">BD original: <b>${t.bd_original}</b> · Agendado por: <b>${t.quem_ultima_tentativa || quemAtual}</b></div>
+      </div>`).join('');
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-conc';
+  s.onerror = function() {
+    document.getElementById('lista-concluidos').innerHTML = '<div class="empty">⚠️ Erro ao carregar.</div>';
+    delete window[cb];
+  };
+  s.src = SCRIPT_URL + '?tipo=concluidos&responsavel=' + encodeURIComponent(quemAtual) + '&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
+
+// ── SEM RETORNO ─────────────────────────────────────────────────
+function carregarSemRetorno() {
+  document.getElementById('lista-sem-retorno').innerHTML = '<div class="loading">Carregando...</div>';
+  const cb = 'cbsr_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-sr');
+    if (el) el.remove();
+    const dados = Array.isArray(data) ? data : [];
+    document.getElementById('sub-sem-retorno').textContent = dados.length + ' lead(s) esgotaram as tentativas';
+    const container = document.getElementById('lista-sem-retorno');
+    if (!dados.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>Nenhum lead sem retorno agora.</div>'; return; }
+    container.innerHTML = dados.map(t => `
+      <div class="lead-card card-sem-retorno" id="sr-${t.id_revisita}">
+        <div class="lead-top">
+          <div class="lead-posto">${t.posto || 'Posto não informado'}</div>
+          <span class="lead-dias" style="margin:0;">${t.dias_na_fila} dia(s) parado</span>
+        </div>
+        <div class="lead-meta">${t.tentativas} tentativas · última: ${t.resultado_ultima || '-'} · BD original: <b>${t.bd_original}</b></div>
+        <button class="btn-reativar" onclick="reativarLead('${t.id_revisita}')">Reativar agora</button>
+      </div>`).join('');
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-sr';
+  s.onerror = function() {
+    document.getElementById('lista-sem-retorno').innerHTML = '<div class="empty">⚠️ Erro ao carregar.</div>';
+    delete window[cb];
+  };
+  s.src = SCRIPT_URL + '?tipo=sem_retorno&responsavel=' + encodeURIComponent(quemAtual) + '&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
+
+function reativarLead(id) {
+  const params = new URLSearchParams({ action: 'reativar_lead', id_revisita: id });
+  const cb = 'cbreativar_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-reativar');
+    if (el) el.remove();
+    if (!resultado || resultado.status !== 'ok') { alert('Erro: ' + (resultado && resultado.msg || 'desconhecido')); return; }
+    const card = document.getElementById('sr-' + id);
+    if (card) card.remove();
+    carregarResumo();
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-reativar';
+  s.onerror = function() { delete window[cb]; alert('Erro ao reativar. Tenta de novo.'); };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
+}
+
+// ── MODO FOCO (modal) ───────────────────────────────────────────
+function abrirFoco(id, tipo) {
+  const t = filaAtual.find(l => l.id_revisita === id);
+  if (!t) return;
 
   let campos = '';
   if (tipo === 'tem_contato') {
@@ -253,9 +468,10 @@ function abrirForm(id, tipo) {
   } else if (tipo === 'sem_contato') {
     campos = `
       <div id="socios-${id}" class="socios-box">🔍 Buscando sócios desse CNPJ...</div>
-      <label>CNPJs encontrados no site externo (cole aqui, separados por vírgula)</label>
-      <input type="text" id="cnpjs-externos-${id}" class="finput-inline" style="width:100%;" placeholder="Ex: 12345678000199, 98765432000188">
-      <button type="button" class="btn-buscar-base" onclick="buscarCnpjsNaBase('${id}')">Buscar na nossa base</button>
+      <div class="cnpj-busca-row">
+        <input type="text" id="cnpjs-externos-${id}" class="finput-inline" placeholder="Colar CNPJs achados, separados por vírgula">
+        <button type="button" class="btn-buscar-base" onclick="buscarCnpjsNaBase('${id}')">Buscar</button>
+      </div>
       <div id="resultado-cnpjs-${id}"></div>
       <label>O que você encontrou pesquisando os sócios?</label>
       <textarea id="obs-${id}" placeholder="Ex: Achei outro posto do mesmo sócio em Y, tentando esse canal agora."></textarea>`;
@@ -265,14 +481,43 @@ function abrirForm(id, tipo) {
       <textarea id="obs-${id}" placeholder="Ex: Disse que já tem outro app parceiro e não quer trocar agora."></textarea>`;
   }
 
-  el.innerHTML = campos + `
-    <button class="btn-salvar" onclick="salvarTentativa('${id}','${tipo}')">Salvar</button>
-    <button class="btn-cancelar" onclick="document.getElementById('form-${id}').classList.remove('show')">Cancelar</button>`;
-  el.classList.add('show');
+  const temContato = String(t.status_lead || '').toLowerCase().includes('com contato');
+  const botaoPitch = temContato ? `
+    <button class="btn-pitch" onclick="gerarPitch('${t.id_revisita}', '${(t.posto||'').replace(/'/g,"")}', '${(t.bd_original||'').replace(/'/g,"")}', '${(t.responsavel||'').replace(/'/g,"")}', '${(t.ultimo_comentario||'').replace(/'/g,"").replace(/\n/g,' ')}', '${t.dias_na_fila}')">Gerar mensagem para WhatsApp</button>
+    <div id="pitch-${t.id_revisita}"></div>` : '';
+  const comentarioBox = t.ultimo_comentario ? `
+    <div class="comentario-box">Último comentário do ${t.bd_original} (aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
+
+  document.getElementById('modal-card').innerHTML = `
+    <button class="modal-fechar" onclick="fecharFoco()">✕</button>
+    <div class="lead-top">
+      <div class="lead-posto">${t.posto || 'Posto não informado'}</div>
+      <div class="lead-prio">Grid ${t.prioridade_grid || '-'}</div>
+    </div>
+    <div class="lead-meta">CNPJ: <b>${t.cnpj}</b></div>
+    <div class="lead-meta">Status: <b>${t.status_lead}</b> · BD original: <b>${t.bd_original}</b></div>
+    ${comentarioBox}
+    ${botaoPitch}
+    <div class="form-registro">
+      ${campos}
+      <button class="btn-salvar" onclick="salvarTentativa('${id}','${tipo}')">Salvar</button>
+      <button class="btn-cancelar" onclick="fecharFoco()">Cancelar</button>
+    </div>
+  `;
+
+  document.getElementById('modal-overlay').classList.add('show');
+  document.body.classList.add('travado');
 
   if (tipo === 'sem_contato') buscarSocios(id);
 }
 
+function fecharFoco() {
+  document.getElementById('modal-overlay').classList.remove('show');
+  document.getElementById('modal-card').innerHTML = '';
+  document.body.classList.remove('travado');
+}
+
+// ── GERAR PITCH ───────────────────────────────────────────────
 function gerarPitch(id, posto, bdOriginal, responsavel, ultimoComentario, diasDesde) {
   const box = document.getElementById('pitch-' + id);
   box.innerHTML = '<div class="pitch-box">Gerando mensagem...</div>';
@@ -290,7 +535,6 @@ function gerarPitch(id, posto, bdOriginal, responsavel, ultimoComentario, diasDe
       box.innerHTML = '<div class="pitch-box">Não consegui gerar a mensagem: ' + (resultado && resultado.msg || 'erro desconhecido') + '</div>';
       return;
     }
-    const textoEscapado = resultado.pitch.replace(/"/g, '&quot;');
     box.innerHTML = '<div class="pitch-box"><p class="pitch-label">Mensagem pronta</p><p id="pitch-texto-' + id + '" style="white-space:pre-wrap;">' + resultado.pitch + '</p>' +
       '<button class="btn-copiar" onclick="copiarPitch(\'' + id + '\')">Copiar mensagem</button></div>';
   };
@@ -309,6 +553,7 @@ function copiarPitch(id) {
   navigator.clipboard.writeText(texto).then(() => alert('Mensagem copiada!'));
 }
 
+// ── BUSCAR CNPJs NA NOSSA BASE ──────────────────────────────────
 function buscarCnpjsNaBase(id) {
   const input = document.getElementById('cnpjs-externos-' + id).value.trim();
   const resultBox = document.getElementById('resultado-cnpjs-' + id);
@@ -327,11 +572,11 @@ function buscarCnpjsNaBase(id) {
       return;
     }
     resultBox.innerHTML = resultado.resultados.map(r => {
-      if (!r.encontrado) return `<div class="socios-box">CNPJ ${r.cnpj}: não encontrado na nossa base.</div>`;
-      return `<div class="socios-box">
-        <b>CNPJ ${r.cnpj} — ${r.posto}</b><br>
-        BD: ${r.bd} · Status: ${r.status}<br>
-        ${r.ultimo_comentario ? 'Último comentário: "' + r.ultimo_comentario + '"' : 'Sem comentário registrado.'}
+      if (!r.encontrado) return `<div class="resultado-nao-achou">CNPJ ${r.cnpj} — não encontrado na nossa base</div>`;
+      return `<div class="resultado-achou">
+        <b>${r.posto}</b> · CNPJ ${r.cnpj}<br>
+        BD ${r.bd} · ${r.status}
+        ${r.ultimo_comentario ? '<br>"' + r.ultimo_comentario + '"' : ''}
       </div>`;
     }).join('');
   };
@@ -345,6 +590,7 @@ function buscarCnpjsNaBase(id) {
   document.head.appendChild(s);
 }
 
+// ── BUSCAR SÓCIOS (BrasilAPI) ────────────────────────────────────
 async function buscarSocios(id) {
   const lead = filaAtual.find(t => t.id_revisita === id);
   const box = document.getElementById('socios-' + id);
@@ -375,8 +621,9 @@ function toggleDataReuniao(id) {
   document.getElementById('datahora-' + id).style.display = checked ? 'block' : 'none';
 }
 
+// ── SALVAR TENTATIVA ─────────────────────────────────────────────
 function salvarTentativa(id, tipo) {
-  const quem = document.getElementById('quem-sou').value;
+  const quem = quemAtual || document.getElementById('quem-sou').value;
   if (!quem) { alert('Selecione quem você é lá em cima antes de registrar.'); return; }
   const obs = document.getElementById('obs-' + id).value.trim();
   const reuniaoEl = document.getElementById('reuniao-' + id);
@@ -412,6 +659,10 @@ function salvarTentativa(id, tipo) {
     document.getElementById('meta-reunioes').textContent = reunioesHoje;
     const card = document.getElementById('card-' + id);
     if (card) card.remove();
+    filaAtual = filaAtual.filter(l => l.id_revisita !== id);
+    document.getElementById('meta-fila').textContent = filaAtual.length;
+    fecharFoco();
+    carregarResumo();
   };
   const s = document.createElement('script');
   s.id = 'jsonp-salvar';
