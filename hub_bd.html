@@ -61,11 +61,12 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
       <div class="menu-card-sub">Tarefas geradas automaticamente pelas suas visitas</div>
     </a>
 
-    <a class="menu-card reporte" id="link-reporte" href="#">
+    <div class="menu-card brevemente">
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6M9 11h6"/></svg></div>
       <div class="menu-card-titulo">Reporte de Fim de Dia</div>
-      <div class="menu-card-sub">Fechamento diário das leads em quase-fechamento</div>
-    </a>
+      <div class="menu-card-sub">Em reconstrução</div>
+      <div class="tag-em-breve">Em breve</div>
+    </div>
 
     <div class="menu-card brevemente">
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2.5 2.5"/></svg></div>
@@ -98,7 +99,6 @@ window.onload = function() {
   const sufixo = nome ? ('?nome=' + encodeURIComponent(nome)) : '';
   document.getElementById('link-visita').href = 'registrar_visita.html' + sufixo;
   document.getElementById('link-tarefas').href = 'tarefas_bd.html' + sufixo;
-  document.getElementById('link-reporte').href = 'reporte_fim_dia.html' + sufixo;
 };
 </script>
 </body>
