@@ -94,6 +94,7 @@ body.travado{overflow:hidden;}
 .form-registro label{display:block;font-size:11px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;margin-top:10px;}
 .socios-box{background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.6;color:var(--branco);}
 .comentario-box{background:#1C2A1C;border:1px solid #3A4A3A;border-radius:8px;padding:8px 12px;font-size:11px;color:#B0B8B0;margin:8px 0;}
+.telefone-box{background:#0F2E20;border:1px solid #3A4A3A;border-radius:8px;padding:8px 12px;font-size:11px;color:#4ADE80;font-weight:700;margin:8px 0;}
 .finput-inline{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:12px;padding:8px 10px;}
 .cnpj-busca-row{display:flex;gap:8px;margin:8px 0;}
 .cnpj-busca-row .finput-inline{margin:0;}
@@ -336,11 +337,20 @@ function carregarFila() {
   document.head.appendChild(s);
 }
 
-function statusInfo(status) {
-  const s = (status || '').toLowerCase();
+// ── Decide cor/prioridade do card a partir do status_lead.
+// Para "Ex parceiro 99" (que não carrega "com contato"/"sem contato" no
+// próprio texto do status), usa o telefone extraído automaticamente do
+// último comentário pra decidir se entra no card verde ou vermelho. ──
+function statusInfo(t) {
+  const s = (t.status_lead || '').toLowerCase();
   if (s.includes('com contato')) return { cor: 'verde', classe: 'status-verde', prioridade: 0 };
-  if (s.includes('decisor oculto')) return { cor: 'laranja', classe: 'status-amarelo', prioridade: 1 };
   if (s.includes('sem contato')) return { cor: 'vermelho', classe: 'status-vermelho', prioridade: 2 };
+  if (s.includes('decisor oculto')) return { cor: 'laranja', classe: 'status-amarelo', prioridade: 1 };
+  if (s.includes('ex parceiro 99')) {
+    return t.telefone_extraido
+      ? { cor: 'verde', classe: 'status-verde', prioridade: 0 }
+      : { cor: 'vermelho', classe: 'status-vermelho', prioridade: 2 };
+  }
   return { cor: 'laranja', classe: '', prioridade: 3 };
 }
 
@@ -350,14 +360,16 @@ function renderizarLista() {
     container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>Nenhum lead na fila de revisita agora.</div>';
     return;
   }
-  const ordenada = [...filaAtual].sort((a,b) => statusInfo(a.status_lead).prioridade - statusInfo(b.status_lead).prioridade);
+  const ordenada = [...filaAtual].sort((a,b) => statusInfo(a).prioridade - statusInfo(b).prioridade);
 
   container.innerHTML = ordenada.map(t => {
-    const info = statusInfo(t.status_lead);
+    const info = statusInfo(t);
     const claseCor = info.cor === 'verde' ? 'cor-verde' : info.cor === 'vermelho' ? 'cor-vermelho' : '';
     const temContato = info.prioridade === 0;
     const comentarioBox = t.ultimo_comentario ? `
       <div class="comentario-box">Último comentário do ${t.bd_original} (aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
+    const telefoneBox = t.telefone_extraido ? `
+      <div class="telefone-box">📞 Telefone extraído automaticamente: <b>${t.telefone_extraido}</b></div>` : '';
     return `
     <div class="lead-card ${claseCor}" id="card-${t.id_revisita}">
       <div class="lead-top">
@@ -369,6 +381,7 @@ function renderizarLista() {
       <div class="lead-meta">Tentativas anteriores: <b>${t.tentativas}</b>${t.quem_ultima_tentativa ? ' · última por ' + t.quem_ultima_tentativa + ' em ' + t.data_ultima_tentativa : ''}</div>
       <span class="lead-dias">${t.dias_na_fila} dia(s) na fila</span>
       ${comentarioBox}
+      ${telefoneBox}
 
       <div class="acoes">
         <button class="btn-acao btn-tem-contato" onclick="abrirFoco('${t.id_revisita}','tem_contato')">📞 Tem contato</button>
@@ -513,9 +526,11 @@ function abrirFoco(id, tipo) {
       <textarea id="obs-${id}" placeholder="Ex: Disse que já tem outro app parceiro e não quer trocar agora."></textarea>`;
   }
 
-  const info = statusInfo(t.status_lead);
+  const info = statusInfo(t);
   const comentarioBox = t.ultimo_comentario ? `
     <div class="comentario-box">Último comentário do ${t.bd_original} (aprox. ${t.dias_na_fila} dia(s)): "${t.ultimo_comentario}"</div>` : '';
+  const telefoneBox = t.telefone_extraido ? `
+    <div class="telefone-box">📞 Telefone extraído automaticamente: <b>${t.telefone_extraido}</b></div>` : '';
 
   document.getElementById('modal-card').innerHTML = `
     <button class="modal-fechar" onclick="fecharFoco()">✕</button>
@@ -526,6 +541,7 @@ function abrirFoco(id, tipo) {
     <div class="lead-meta">CNPJ: <b>${t.cnpj}</b></div>
     <div class="lead-meta">Status: <b class="${info.classe}">${t.status_lead}</b> · BD original: <b>${t.bd_original}</b></div>
     ${comentarioBox}
+    ${telefoneBox}
     <div class="form-registro">
       ${campos}
       <button class="btn-salvar" onclick="salvarTentativa('${id}','${tipo}')">Salvar</button>
