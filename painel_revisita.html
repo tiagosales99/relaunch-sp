@@ -355,15 +355,15 @@ function statusInfo(t) {
 }
 
 // ── Monta o contato como link clicável de ligar quando reconhece um
-// telefone válido no texto; senão mostra o texto cru registrado. ──
+// telefone válido no texto; senão mostra o texto cru registrado.
+// Inclui o rótulo de quem é o contato (Decisor ou Frentista/Gerente). ──
 function contatoLink(t) {
   if (!t.contato_bd) return '';
   const pareceTelefone = /^\(\d{2}\) \d{4,5}-\d{4}$/.test(t.telefone_extraido || '');
-  if (pareceTelefone) {
-    const numeroLimpo = t.telefone_extraido.replace(/\D/g, '');
-    return `<a href="tel:${numeroLimpo}" style="color:#4ADE80;font-weight:800;">${t.telefone_extraido}</a>`;
-  }
-  return `<b>${t.contato_bd}</b>`;
+  const valor = pareceTelefone
+    ? `<a href="tel:${t.telefone_extraido.replace(/\D/g,'')}" style="color:#4ADE80;font-weight:800;">${t.telefone_extraido}</a>`
+    : `<b>${t.contato_bd}</b>`;
+  return t.tipo_contato ? `[${t.tipo_contato}] ${valor}` : valor;
 }
 
 function renderizarLista() {
