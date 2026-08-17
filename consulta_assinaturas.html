@@ -20,36 +20,42 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
 .topbar-voltar{background:var(--preto);color:var(--amarelo);border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
 
-.container{max-width:1200px;margin:0 auto;padding:20px 24px 60px;}
+.container{max-width:640px;margin:0 auto;padding:60px 24px 60px;}
 
-.busca-row{display:flex;gap:10px;margin-bottom:16px;}
-.busca-row input{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:13px;padding:11px 14px;outline:none;}
-.busca-row input:focus{border-color:var(--amarelo);}
-.busca-row button{background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:0 22px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;cursor:pointer;}
-.busca-vazio{background:var(--cinza-escuro);border:1.5px dashed var(--borda);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;color:var(--vermelho);font-size:12px;font-weight:700;}
+.busca-titulo{text-align:center;font-size:13px;color:var(--texto-claro);margin-bottom:16px;}
+.busca-input{width:100%;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:10px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:16px;padding:16px;outline:none;text-align:center;margin-bottom:16px;}
+.busca-input:focus{border-color:var(--amarelo);}
+.busca-btn{width:100%;background:var(--amarelo);color:var(--preto);border:none;border-radius:10px;padding:18px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;cursor:pointer;margin-bottom:32px;}
+.busca-btn:disabled{opacity:.5;cursor:not-allowed;}
 
-.socio-check{margin-top:10px;font-size:11px;font-weight:700;padding:8px 12px;border-radius:8px;background:var(--cinza-medio);color:var(--texto-claro);}
-.socio-check.divergente{background:#3D0000;border:1px solid var(--vermelho);color:#FF8A8A;}
+.busca-vazio{background:var(--cinza-escuro);border:1.5px dashed var(--borda);border-radius:var(--radius);padding:20px;text-align:center;color:var(--vermelho);font-size:12.5px;font-weight:700;}
 
-.legenda{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
-.legenda-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--texto-claro);}
-.legenda-bola{width:10px;height:10px;border-radius:50%;}
+.termo-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:5px solid var(--laranja);border-radius:var(--radius);padding:20px 24px;margin-bottom:14px;}
+.termo-card.etapa-listado{border-left-color:var(--verde);}
+.termo-card.etapa-deslistado, .termo-card.etapa-obsoleto{border-left-color:var(--vermelho);}
+.termo-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
+.termo-posto{font-weight:800;font-size:15px;}
+.termo-etapa{font-size:10px;font-weight:800;padding:3px 10px;border-radius:12px;white-space:nowrap;}
+.etapa-listado .termo-etapa{background:#0F2E20;color:var(--verde);}
+.etapa-deslistado .termo-etapa, .etapa-obsoleto .termo-etapa{background:#3D0000;color:var(--vermelho);}
+.termo-card:not(.etapa-listado):not(.etapa-deslistado):not(.etapa-obsoleto) .termo-etapa{background:#3D2A00;color:var(--laranja);}
+.termo-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
+.termo-meta b{color:var(--branco);}
 
-.lead-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:5px solid var(--laranja);border-radius:var(--radius);padding:22px 26px;margin-bottom:16px;}
-.lead-card.etapa-listado{border-left-color:var(--verde);}
-.lead-card.etapa-deslistado, .lead-card.etapa-obsoleto{border-left-color:var(--vermelho);}
-.lead-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
-.lead-posto{font-weight:800;font-size:15px;}
-.lead-etapa{font-size:10px;font-weight:800;padding:3px 10px;border-radius:12px;white-space:nowrap;}
-.etapa-listado .lead-etapa{background:#0F2E20;color:var(--verde);}
-.etapa-deslistado .lead-etapa, .etapa-obsoleto .lead-etapa{background:#3D0000;color:var(--vermelho);}
-.lead-card:not(.etapa-listado):not(.etapa-deslistado):not(.etapa-obsoleto) .lead-etapa{background:#3D2A00;color:var(--laranja);}
-.lead-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
-.lead-meta b{color:var(--branco);}
+.contexto-box{background:#1C2A1C;border:1px solid #3A4A3A;border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;}
+.contexto-label{font-size:10px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+.contexto-texto{font-size:12.5px;color:var(--branco);line-height:1.5;}
+.contexto-origem{font-size:10px;color:#6E7A6E;margin-top:8px;}
+.contexto-origem b{color:var(--texto-claro);}
 
-.empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
-.empty-icon{font-size:30px;margin-bottom:10px;}
-.loading{text-align:center;padding:50px 20px;color:var(--texto-claro);}
+.historico-box{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-radius:var(--radius);padding:16px 20px;}
+.historico-label{font-size:10px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;}
+.historico-item{font-size:11.5px;color:#B0B8B0;padding:8px 0;border-bottom:1px solid var(--cinza-medio);}
+.historico-item:last-child{border-bottom:none;}
+.historico-item b{color:var(--branco);}
+.historico-tag{font-size:9px;font-weight:800;padding:2px 8px;border-radius:8px;background:var(--cinza-medio);color:var(--texto-claro);margin-left:6px;}
+
+.loading{text-align:center;padding:30px 20px;color:var(--texto-claro);}
 </style>
 </head>
 <body>
@@ -59,7 +65,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
     <div class="topbar-logo">99</div>
     <div>
       <div class="topbar-title">Consulta de Assinaturas</div>
-      <div class="topbar-sub">Onde cada lead assinado está no funil</div>
+      <div class="topbar-sub">Busca por CNPJ, em todos os BDs e waves</div>
     </div>
   </div>
   <a class="topbar-voltar" id="link-voltar" href="hub_bd.html">← Menu</a>
@@ -67,19 +73,11 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 
 <div class="container">
 
-  <div class="busca-row">
-    <input type="text" id="busca-cnpj" inputmode="numeric" placeholder="Digite o CNPJ (só números)">
-    <button onclick="buscarPorCnpj()">Buscar</button>
-  </div>
-  <div id="resultado-busca"></div>
+  <div class="busca-titulo">Digite o CNPJ do posto que quer consultar</div>
+  <input type="text" id="busca-cnpj" class="busca-input" inputmode="numeric" placeholder="12345678000100">
+  <button class="busca-btn" id="btn-buscar" onclick="buscarCnpj()">🔍 Consultar CNPJ</button>
 
-  <div class="legenda">
-    <div class="legenda-item"><span class="legenda-bola" style="background:var(--verde);"></span> Listado</div>
-    <div class="legenda-item"><span class="legenda-bola" style="background:var(--laranja);"></span> Em andamento no funil</div>
-    <div class="legenda-item"><span class="legenda-bola" style="background:var(--vermelho);"></span> Deslistado / Obsoleto</div>
-  </div>
-
-  <div id="lista-assinaturas"><div class="loading">Carregando...</div></div>
+  <div id="resultado"></div>
 
 </div>
 
@@ -87,17 +85,14 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 const SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKWhHlEG9zMBbpg7ADTuU_Ares6xivwmSrMvFnj0689ILmisASnfgZie0botnZ0A/exec';
 
 let quemAtual = '';
-let leadsCarregados = [];
 
 window.onload = function() {
   const params = new URLSearchParams(window.location.search);
   quemAtual = params.get('nome') || '';
   document.getElementById('link-voltar').href = 'hub_bd.html' + (quemAtual ? ('?nome=' + encodeURIComponent(quemAtual)) : '');
-  if (!quemAtual) {
-    document.getElementById('lista-assinaturas').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Acesse essa página pelo menu, faltou identificar quem você é.</div>';
-    return;
-  }
-  carregarAssinaturas();
+  document.getElementById('busca-cnpj').addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') buscarCnpj();
+  });
 };
 
 function classeEtapa(etapa) {
@@ -108,141 +103,86 @@ function classeEtapa(etapa) {
   return '';
 }
 
-function carregarAssinaturas() {
-  const cb = 'cbassinaturas_' + Date.now();
-  window[cb] = function(data) {
+function buscarCnpj() {
+  const valor = document.getElementById('busca-cnpj').value.replace(/\D/g, '');
+  const resultBox = document.getElementById('resultado');
+  if (!valor) { resultBox.innerHTML = '<div class="busca-vazio">Digite um CNPJ antes de buscar.</div>'; return; }
+
+  const btn = document.getElementById('btn-buscar');
+  btn.disabled = true;
+  btn.textContent = 'Buscando...';
+  resultBox.innerHTML = '<div class="loading">Consultando em todas as waves...</div>';
+
+  const cb = 'cbconsulta_' + Date.now();
+  window[cb] = function(resultado) {
     delete window[cb];
-    const el = document.getElementById('jsonp-assinaturas');
+    const el = document.getElementById('jsonp-consulta');
     if (el) el.remove();
-    leadsCarregados = Array.isArray(data) ? data : [];
-    renderizarLista(leadsCarregados);
-    verificarTodosSocios(leadsCarregados);
+    btn.disabled = false;
+    btn.textContent = '🔍 Consultar CNPJ';
+    renderizarResultado(resultado);
   };
   const s = document.createElement('script');
-  s.id = 'jsonp-assinaturas';
+  s.id = 'jsonp-consulta';
   s.onerror = function() {
     delete window[cb];
-    document.getElementById('lista-assinaturas').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Não consegui buscar os dados. Tenta recarregar a página.</div>';
+    btn.disabled = false;
+    btn.textContent = '🔍 Consultar CNPJ';
+    resultBox.innerHTML = '<div class="busca-vazio">Erro ao buscar. Tenta de novo.</div>';
   };
-  s.src = SCRIPT_URL + '?tipo=meus_termos&bd=' + encodeURIComponent(quemAtual) + '&callback=' + cb + '&t=' + Date.now();
+  s.src = SCRIPT_URL + '?tipo=consulta_cnpj&cnpj=' + encodeURIComponent(valor) + '&callback=' + cb + '&t=' + Date.now();
   document.head.appendChild(s);
 }
 
-// ── BUSCA POR CNPJ ────────────────────────────────────────────
-function buscarPorCnpj() {
-  const valor = document.getElementById('busca-cnpj').value.replace(/\D/g, '');
-  const resultBox = document.getElementById('resultado-busca');
-  if (!valor) { resultBox.innerHTML = ''; return; }
-
-  const cnpjBusca = valor.padStart(14, '0');
-  const encontrado = leadsCarregados.find(l => l.cnpj === cnpjBusca);
-
-  if (!encontrado) {
-    resultBox.innerHTML = '<div class="busca-vazio">Esse CNPJ ainda não assinou termo esse mês.</div>';
+function renderizarResultado(resultado) {
+  const resultBox = document.getElementById('resultado');
+  if (!resultado || resultado.status === 'erro') {
+    resultBox.innerHTML = '<div class="busca-vazio">' + (resultado && resultado.msg || 'Erro ao buscar.') + '</div>';
     return;
   }
-  resultBox.innerHTML = '';
-  const card = document.getElementById('card-' + cnpjBusca);
-  if (card) {
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    card.style.outline = '2px solid var(--amarelo)';
-    setTimeout(() => { card.style.outline = ''; }, 2500);
-  }
-}
 
-// ── CHECAGEM DE SÓCIO ADMINISTRADOR (BrasilAPI) ─────────────────
-function normalizarNome(str) {
-  return String(str || '')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase().replace(/[^a-z\s]/g, '').trim();
-}
+  const contexto = Array.isArray(resultado.contexto) ? resultado.contexto : [];
+  let html = '';
 
-function nomesCorrespondem(a, b) {
-  const na = normalizarNome(a);
-  const nb = normalizarNome(b);
-  if (!na || !nb) return false;
-  if (na === nb) return true;
-  const palavrasA = na.split(/\s+/).filter(w => w.length > 2);
-  const palavrasB = nb.split(/\s+/).filter(w => w.length > 2);
-  const comuns = palavrasA.filter(w => palavrasB.includes(w));
-  return comuns.length >= 2;
-}
-
-async function verificarSocio(lead) {
-  try {
-    const cnpjLimpo = lead.cnpj.replace(/\D/g, '').padStart(14, '0');
-    const r = await fetch('https://brasilapi.com.br/api/cnpj/v1/' + cnpjLimpo);
-    if (!r.ok) return { status: 'erro_busca' };
-    const dados = await r.json();
-    const socios = Array.isArray(dados.qsa) ? dados.qsa : [];
-    const administradores = socios.filter(s => /administrador/i.test(s.qualificacao_socio || s.qual || ''));
-    const listaParaComparar = administradores.length ? administradores : socios;
-    const bate = listaParaComparar.some(s => nomesCorrespondem(lead.socio_assinou, s.nome_socio || s.nome || ''));
-    return { status: bate ? 'ok' : 'divergente' };
-  } catch (err) {
-    return { status: 'erro_busca' };
-  }
-}
-
-async function verificarTodosSocios(leads) {
-  for (const lead of leads) {
-    if (!lead.cnpj || !lead.socio_assinou) continue;
-    const badgeEl = document.getElementById('socio-badge-' + lead.cnpj);
-    if (!badgeEl) continue;
-
-    const resultado = await verificarSocio(lead);
-    if (resultado.status === 'divergente') {
-      badgeEl.classList.add('divergente');
-      badgeEl.textContent = '⚠️ Esse nome não confere com nenhum sócio administrador no Contrato Social (Receita Federal). Tarefa urgente criada pro BD confirmar.';
-      sinalizarDivergencia(lead);
-    } else {
-      // "ok" ou "erro_busca": não deixa alerta falso na tela
-      badgeEl.remove();
-    }
-    await new Promise(res => setTimeout(res, 400)); // intervalo entre chamadas, pra não estourar a API pública
-  }
-}
-
-function sinalizarDivergencia(lead) {
-  const params = new URLSearchParams({
-    action: 'sinalizar_socio_divergente',
-    cnpj: lead.cnpj,
-    posto: lead.nome_posto || '',
-    bd: quemAtual,
-    socio_assinante: lead.socio_assinou || ''
-  });
-  const cb = 'cbsocio_' + Date.now();
-  window[cb] = function() {
-    delete window[cb];
-    const el = document.getElementById('jsonp-socio');
-    if (el) el.remove();
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-socio';
-  s.onerror = function() { delete window[cb]; };
-  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
-  document.head.appendChild(s);
-}
-
-function renderizarLista(leads) {
-  const container = document.getElementById('lista-assinaturas');
-  if (!leads.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>Nenhuma assinatura encontrada esse mês.</div>';
-    return;
-  }
-  container.innerHTML = leads.map(t => {
+  if (resultado.status === 'ok' && resultado.termo) {
+    const t = resultado.termo;
     const classe = classeEtapa(t.etapa_funil);
-    return `
-    <div class="lead-card ${classe}" id="card-${t.cnpj}">
-      <div class="lead-top">
-        <div class="lead-posto">${t.nome_posto || 'Posto não informado'}</div>
-        <div class="lead-etapa">${t.etapa_funil || 'Etapa não encontrada'}</div>
-      </div>
-      <div class="lead-meta">CNPJ: <b>${t.cnpj}</b></div>
-      <div class="lead-meta">Assinado em: <b>${t.data_assinatura || '-'}</b> ${t.socio_assinou ? '· Sócio: <b>' + t.socio_assinou + '</b>' : ''}</div>
-      ${t.socio_assinou ? `<div class="socio-check" id="socio-badge-${t.cnpj}">🔍 Verificando sócio no Contrato Social...</div>` : ''}
-    </div>`;
-  }).join('');
+    html += `
+      <div class="termo-card ${classe}">
+        <div class="termo-top">
+          <div class="termo-posto">${t.nome_posto || 'Posto não informado'}</div>
+          <div class="termo-etapa">${t.etapa_funil || 'Etapa não encontrada'}</div>
+        </div>
+        <div class="termo-meta">CNPJ: <b>${t.cnpj}</b> · BD do termo: <b>${t.bd || '-'}</b></div>
+        <div class="termo-meta">Assinado em: <b>${t.data_assinatura || '-'}</b> ${t.socio_assinou ? '· Sócio: <b>' + t.socio_assinou + '</b>' : ''}</div>
+      </div>`;
+  } else {
+    html += '<div class="busca-vazio">Esse CNPJ não tem termo assinado esse mês.</div>';
+  }
+
+  if (contexto.length) {
+    const ultima = contexto[0];
+    html += `
+      <div class="contexto-box">
+        <div class="contexto-label">Contexto da última visita</div>
+        <div class="contexto-texto">${ultima.resumo || ultima.status || 'Sem resumo registrado.'}</div>
+        <div class="contexto-origem">Registrado por <b>${ultima.bd || '-'}</b> em ${ultima.data || '-'} <span class="historico-tag">${ultima.origem}</span></div>
+      </div>`;
+
+    if (contexto.length > 1) {
+      html += `
+        <div class="historico-box">
+          <div class="historico-label">Histórico completo (todos os BDs e waves)</div>
+          ${contexto.slice(1).map(c => `
+            <div class="historico-item">${c.data || '-'} · <b>${c.bd || '-'}</b> · ${c.status || c.resumo || '-'}<span class="historico-tag">${c.origem}</span></div>
+          `).join('')}
+        </div>`;
+    }
+  } else if (resultado.status === 'nao_encontrado') {
+    html += '<div class="busca-vazio" style="margin-top:14px;">Nenhum histórico de visita encontrado pra esse CNPJ em nenhuma wave.</div>';
+  }
+
+  resultBox.innerHTML = html;
 }
 </script>
 </body>
