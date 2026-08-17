@@ -19,6 +19,7 @@ body.travado{overflow:hidden;}
 .topbar-logo{width:34px;height:34px;background:var(--preto);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--amarelo);}
 .topbar-title{font-weight:800;font-size:16px;color:var(--preto);line-height:1.1;}
 .topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
+.topbar-voltar{background:var(--preto);color:var(--amarelo);border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
 
 .container{max-width:1200px;margin:0 auto;padding:20px 24px 60px;}
 
@@ -37,12 +38,14 @@ body.travado{overflow:hidden;}
 .menu-card.pendentes{border-left:6px solid var(--laranja);}
 .menu-card.concluidos{border-left:6px solid var(--verde);}
 .menu-card.semretorno{border-left:6px solid var(--vermelho);}
+.menu-card.retornosbd{border-left:6px solid #7B3FE4;}
 .menu-card-titulo{font-weight:800;font-size:18px;}
 .menu-card-sub{font-size:13px;color:var(--texto-claro);margin-top:3px;}
 .menu-card-num{font-weight:800;font-size:20px;width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .pendentes .menu-card-num{background:var(--laranja);color:#3D2A00;}
 .concluidos .menu-card-num{background:var(--verde);color:#00280F;}
 .semretorno .menu-card-num{background:var(--vermelho);color:#3D0000;}
+.retornosbd .menu-card-num{background:#7B3FE4;color:#FFFFFF;}
 
 /* VOLTAR */
 .header-secao{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
@@ -121,6 +124,15 @@ body.travado{overflow:hidden;}
 .modal-card.cor-laranja{border-color:var(--laranja);}
 .modal-fechar{float:right;font-size:18px;color:var(--texto-claro);cursor:pointer;background:none;border:none;line-height:1;}
 
+.retorno-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:5px solid #7B3FE4;border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;}
+.retorno-contato{background:#211A33;border:1px solid #7B3FE4;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:13px;font-weight:800;color:#FFFFFF;}
+.btn-finalizar{width:100%;background:#7B3FE4;color:#FFFFFF;border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.contato-valido-box{background:#0F2E20;border:1px solid var(--verde);border-radius:8px;padding:8px 12px;margin:8px 0;}
+.contato-valido-label{font-size:9px;font-weight:700;color:#4ADE80;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;}
+.contato-valido-texto{font-size:12.5px;font-weight:800;color:#FFFFFF;}
+.btn-solicitar-contato{width:100%;margin-top:8px;background:var(--vermelho);color:#FFFFFF;border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+.btn-solicitar-contato:disabled{opacity:.6;cursor:not-allowed;}
+
 .empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
 .empty-icon{font-size:30px;margin-bottom:10px;}
 #quem-sou-wrap{display:none !important;}
@@ -137,6 +149,7 @@ body.travado{overflow:hidden;}
       <div class="topbar-sub">Leads travados esperando retorno</div>
     </div>
   </div>
+  <a class="topbar-voltar" href="login.html">← Menu</a>
 </div>
 
 <div class="container">
@@ -168,6 +181,10 @@ body.travado{overflow:hidden;}
       <div class="menu-card semretorno" onclick="mostrarView('sem_retorno')">
         <div><div class="menu-card-titulo">Sem retorno</div><div class="menu-card-sub">Esgotaram as tentativas</div></div>
         <div class="menu-card-num" id="num-sem-retorno">-</div>
+      </div>
+      <div class="menu-card retornosbd" onclick="mostrarView('retornos_bd')">
+        <div><div class="menu-card-titulo">Retornos BD Aquisição</div><div class="menu-card-sub">Contatos que o BD te devolveu</div></div>
+        <div class="menu-card-num" id="num-retornos-bd">-</div>
       </div>
     </div>
   </div>
@@ -212,6 +229,16 @@ body.travado{overflow:hidden;}
     <div id="lista-sem-retorno"><div class="loading">Carregando...</div></div>
   </div>
 
+  <!-- ═══ VIEW: RETORNOS BD AQUISIÇÃO ═══ -->
+  <div id="view-retornos-bd" style="display:none;">
+    <div class="header-secao">
+      <button class="btn-voltar" onclick="mostrarView('menu')">←</button>
+      <div><div class="header-secao-titulo">Retornos BD Aquisição</div><div class="header-secao-sub" id="sub-retornos-bd"></div></div>
+    </div>
+    <div class="secao-aviso">Contatos que você solicitou e o BD já respondeu — finalize depois de usar</div>
+    <div id="lista-retornos-bd"><div class="loading">Carregando...</div></div>
+  </div>
+
 </div>
 
 <!-- ═══ MODO FOCO (modal) ═══ -->
@@ -249,8 +276,9 @@ window.onload = function() {
 
 // ── NAVEGAÇÃO ENTRE TELAS ──────────────────────────────────────
 function mostrarView(nome) {
-  ['menu','pendentes','concluidos','sem_retorno'].forEach(v => {
-    document.getElementById('view-' + (v === 'sem_retorno' ? 'sem-retorno' : v)).style.display = 'none';
+  ['menu','pendentes','concluidos','sem_retorno','retornos_bd'].forEach(v => {
+    const idMap = { sem_retorno: 'sem-retorno', retornos_bd: 'retornos-bd' };
+    document.getElementById('view-' + (idMap[v] || v)).style.display = 'none';
   });
   if (!quemAtual) quemAtual = document.getElementById('quem-sou').value;
   if (!quemAtual && nome !== 'menu') { alert('Selecione seu nome ali em cima primeiro.'); nome = 'menu'; }
@@ -270,6 +298,9 @@ function mostrarView(nome) {
   } else if (nome === 'sem_retorno') {
     document.getElementById('view-sem-retorno').style.display = 'block';
     carregarSemRetorno();
+  } else if (nome === 'retornos_bd') {
+    document.getElementById('view-retornos-bd').style.display = 'block';
+    carregarRetornosBd();
   }
 }
 
@@ -283,6 +314,7 @@ function carregarResumo() {
     document.getElementById('num-pendentes').textContent = data.pendentes ?? '-';
     document.getElementById('num-concluidos').textContent = data.concluidos ?? '-';
     document.getElementById('num-sem-retorno').textContent = data.sem_retorno ?? '-';
+    document.getElementById('num-retornos-bd').textContent = data.retornos_bd ?? '-';
   };
   const s = document.createElement('script');
   s.id = 'jsonp-resumo';
@@ -376,6 +408,24 @@ function contatoLink(t) {
   return t.tipo_contato ? `[${t.tipo_contato}] ${valor}` : valor;
 }
 
+// ── Contato válido (encontrado em qualquer visita) ou botão de
+// solicitar ao BD, quando o status é "Aguardando decisor com contato"
+// mas nenhum contato válido foi achado. ──
+function montarBoxContato(t) {
+  if (t.contato_valido) {
+    return `<div class="contato-valido-box">
+      <div class="contato-valido-label">📞 Contato encontrado${t.contato_tipo ? ' (' + t.contato_tipo + ')' : ''}</div>
+      <div class="contato-valido-texto">${t.contato_valido}</div>
+    </div>`;
+  }
+  const statusLower = (t.status_lead || '').toLowerCase();
+  if (statusLower.includes('aguardando decisor com contato')) {
+    const postoEscapado = String(t.posto || '').replace(/'/g, "\\'");
+    return `<button class="btn-solicitar-contato" id="btn-solicitar-${t.id_revisita}" onclick="solicitarContato('${t.id_revisita}','${t.cnpj}','${postoEscapado}','${t.bd_original}')">⚠️ Solicitar contato ao BD</button>`;
+  }
+  return '';
+}
+
 function renderizarLista() {
   const container = document.getElementById('lista-leads');
   if (!filaAtual.length) {
@@ -402,6 +452,7 @@ function renderizarLista() {
       <div class="lead-meta">Tentativas anteriores: <b>${t.tentativas}</b>${t.quem_ultima_tentativa ? ' · última por ' + t.quem_ultima_tentativa + ' em ' + t.data_ultima_tentativa : ''}</div>
       <span class="lead-dias">${t.dias_na_fila} dia(s) na fila</span>
       ${comentarioBox}
+      ${montarBoxContato(t)}
 
       <div class="acoes">
         <button class="btn-acao btn-tem-contato" onclick="abrirFoco('${t.id_revisita}','tem_contato')">📞 Tem contato</button>
@@ -481,6 +532,88 @@ function carregarSemRetorno() {
   document.head.appendChild(s);
 }
 
+// ── RETORNOS BD AQUISIÇÃO ────────────────────────────────────────
+function carregarRetornosBd() {
+  document.getElementById('lista-retornos-bd').innerHTML = '<div class="loading">Carregando...</div>';
+  const cb = 'cbret_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-ret');
+    if (el) el.remove();
+    const dados = Array.isArray(data) ? data : [];
+    document.getElementById('sub-retornos-bd').textContent = dados.length + ' retorno(s) esperando você finalizar';
+    const container = document.getElementById('lista-retornos-bd');
+    if (!dados.length) { container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>Nenhum retorno pendente agora.</div>'; return; }
+    container.innerHTML = dados.map(s => `
+      <div class="retorno-card" id="ret-${s.id_solicitacao}">
+        <div class="lead-posto">${s.posto || 'Posto não informado'}</div>
+        <div class="lead-meta">CNPJ: <b>${s.cnpj}</b> · BD: <b>${s.bd_aquisicao}</b></div>
+        <div class="retorno-contato">📞 ${s.contato_fornecido || '-'}</div>
+        <div class="lead-meta">Respondido em ${s.data_resposta || '-'}</div>
+        <button class="btn-finalizar" onclick="finalizarRetorno('${s.id_solicitacao}')">✓ Finalizar</button>
+      </div>`).join('');
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-ret';
+  s.onerror = function() {
+    document.getElementById('lista-retornos-bd').innerHTML = '<div class="empty">⚠️ Erro ao carregar.</div>';
+    delete window[cb];
+  };
+  s.src = SCRIPT_URL + '?tipo=retornos_sdr&sdr=' + encodeURIComponent(quemAtual) + '&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
+
+function finalizarRetorno(id) {
+  const params = new URLSearchParams({ action: 'finalizar_retorno', id_solicitacao: id });
+  const cb = 'cbfin_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-fin');
+    if (el) el.remove();
+    if (!resultado || resultado.status !== 'ok') { alert('Erro ao finalizar. Tenta de novo.'); return; }
+    const card = document.getElementById('ret-' + id);
+    if (card) card.remove();
+    carregarResumo();
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-fin';
+  s.onerror = function() { delete window[cb]; alert('Erro ao finalizar. Tenta de novo.'); };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
+}
+
+// ── SOLICITAR CONTATO AO BD (quando nenhum contato válido é encontrado) ──
+function solicitarContato(id, cnpj, posto, bdOriginal) {
+  const btn = document.getElementById('btn-solicitar-' + id);
+  if (btn) { btn.disabled = true; btn.textContent = 'Solicitando...'; }
+
+  const params = new URLSearchParams({
+    action: 'solicitar_contato', id_revisita: id, cnpj: cnpj, posto: posto,
+    bd_aquisicao: bdOriginal, sdr: quemAtual
+  });
+  const cb = 'cbsolic_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-solic');
+    if (el) el.remove();
+    if (!resultado || resultado.status !== 'ok') {
+      if (btn) { btn.disabled = false; btn.textContent = '⚠️ Solicitar contato ao BD'; }
+      alert('Erro ao solicitar. Tenta de novo.');
+      return;
+    }
+    if (btn) { btn.textContent = '✓ Contato solicitado'; }
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-solic';
+  s.onerror = function() {
+    delete window[cb];
+    if (btn) { btn.disabled = false; btn.textContent = '⚠️ Solicitar contato ao BD'; }
+    alert('Erro ao solicitar. Tenta de novo.');
+  };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
+}
+
 function reativarLead(id) {
   const params = new URLSearchParams({ action: 'reativar_lead', id_revisita: id });
   const cb = 'cbreativar_' + Date.now();
@@ -523,11 +656,11 @@ function abrirFoco(id, tipo) {
         <input type="radio" name="reuniao-radio-${id}" id="reuniao-nao-${id}" onchange="toggleDataReuniao('${id}')">
         <label style="margin:0;">Não consegui agendamento</label>
       </div>
-      <div id="datahora-${id}" style="display:none;margin-top:10px;">
+      <div id="datahora-${id}" style="margin-top:10px;">
         <label>Data e horário combinados</label>
         <div style="display:flex;gap:8px;">
-          <input type="date" id="data-reuniao-${id}" class="finput-inline">
-          <input type="time" id="hora-reuniao-${id}" class="finput-inline">
+          <input type="date" id="data-reuniao-${id}" class="finput-inline" oninput="marcarReuniaoAgendada('${id}')">
+          <input type="time" id="hora-reuniao-${id}" class="finput-inline" oninput="marcarReuniaoAgendada('${id}')">
         </div>
       </div>`;
   } else if (tipo === 'sem_contato') {
@@ -552,6 +685,7 @@ function abrirFoco(id, tipo) {
     <div class="comentario-box">Contexto da visita (${t.bd_original}, há ${formatarDias(diasContatoModal)}): "${t.ultimo_comentario}"</div>` : '';
   const telefoneBox = t.contato_bd ? `
     <div class="telefone-box">📞 Contato registrado pelo BD: ${contatoLink(t)}</div>` : '';
+  const boxContatoModal = montarBoxContato(t);
 
   document.getElementById('modal-card').innerHTML = `
     <button class="modal-fechar" onclick="fecharFoco()">✕</button>
@@ -563,6 +697,7 @@ function abrirFoco(id, tipo) {
     <div class="lead-meta">Status: <b class="${info.classe}">${t.status_lead}</b> · BD original: <b>${t.bd_original}</b></div>
     ${comentarioBox}
     ${telefoneBox}
+    ${boxContatoModal}
     <div class="form-registro">
       ${campos}
       <button class="btn-salvar" onclick="salvarTentativa('${id}','${tipo}')">Salvar</button>
@@ -701,6 +836,13 @@ async function buscarSocios(id) {
 function toggleDataReuniao(id) {
   const checked = document.getElementById('reuniao-sim-' + id).checked;
   document.getElementById('datahora-' + id).style.display = checked ? 'block' : 'none';
+}
+
+// Ao preencher data ou horário, marca sozinho o rádio "Consegui agendar
+// reunião" — não precisa clicar manualmente antes.
+function marcarReuniaoAgendada(id) {
+  const radio = document.getElementById('reuniao-sim-' + id);
+  if (radio && !radio.checked) radio.checked = true;
 }
 
 // ── SALVAR TENTATIVA ─────────────────────────────────────────────
