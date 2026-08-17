@@ -116,25 +116,17 @@ function prioridadeClasse(p) {
   return 'pri-baixa';
 }
 
-function carregarTarefas() {
+async function carregarTarefas() {
   document.getElementById('lista-tarefas').innerHTML = '<div class="loading">Carregando tarefas...</div>';
-  const cb = 'cbtarefas_' + Date.now();
-  window[cb] = function(data) {
-    delete window[cb];
-    const el = document.getElementById('jsonp-tarefas');
-    if (el) el.remove();
+  try {
+    const resposta = await fetch(SCRIPT_URL + '?bd=' + encodeURIComponent(quemAtual) + '&t=' + Date.now());
+    const data = await resposta.json();
     tarefasAtuais = (Array.isArray(data) ? data : []).filter(t => t.status_tarefa === 'Pendente');
     renderizarMeta();
     renderizarLista();
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-tarefas';
-  s.onerror = function() {
-    delete window[cb];
+  } catch (err) {
     document.getElementById('lista-tarefas').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Não consegui buscar as tarefas. Tenta recarregar a página.</div>';
-  };
-  s.src = SCRIPT_URL + '?bd=' + encodeURIComponent(quemAtual) + '&callback=' + cb + '&t=' + Date.now();
-  document.head.appendChild(s);
+  }
 }
 
 function renderizarMeta() {
@@ -212,25 +204,20 @@ function fecharModal() {
   document.body.classList.remove('travado');
 }
 
-function salvarConclusao(id) {
+async function salvarConclusao(id) {
   const obs = document.getElementById('obs-conclusao').value.trim();
   const params = new URLSearchParams({ action: 'concluir', id_tarefa: id, observacao: obs });
-  const cb = 'cbconcluir_' + Date.now();
-  window[cb] = function(resultado) {
-    delete window[cb];
-    const el = document.getElementById('jsonp-concluir');
-    if (el) el.remove();
+  try {
+    const resposta = await fetch(SCRIPT_URL + '?' + params.toString());
+    const resultado = await resposta.json();
     if (!resultado || resultado.status !== 'ok') { alert('Erro ao concluir. Tenta de novo.'); return; }
     tarefasAtuais = tarefasAtuais.filter(t => t.id_tarefa !== id);
     renderizarMeta();
     renderizarLista();
     fecharModal();
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-concluir';
-  s.onerror = function() { delete window[cb]; alert('Erro ao concluir. Tenta de novo.'); };
-  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
-  document.head.appendChild(s);
+  } catch (err) {
+    alert('Erro ao concluir. Tenta de novo.');
+  }
 }
 </script>
 </body>
