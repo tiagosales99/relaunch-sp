@@ -27,13 +27,17 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .meta-label{font-size:10px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
 .meta-valor{font-size:24px;font-weight:800;color:var(--amarelo);}
 
-.termo-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:5px solid var(--verde);border-radius:var(--radius);padding:22px 26px;margin-bottom:16px;}
+.termo-card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:5px solid var(--laranja);border-radius:var(--radius);padding:22px 26px;margin-bottom:16px;}
+.termo-card.cor-verde{border-left-color:var(--verde);}
+.termo-card.cor-amarelo{border-left-color:var(--laranja);}
+.termo-card.cor-vermelho{border-left-color:var(--vermelho);}
 .termo-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
 .termo-posto{font-weight:800;font-size:15px;}
 .termo-data{font-size:11px;font-weight:800;padding:3px 10px;border-radius:12px;background:#0F2E20;color:var(--verde);white-space:nowrap;}
 .termo-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
 .termo-meta b{color:var(--branco);}
 .termo-forms{display:inline-block;margin-top:10px;font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;background:var(--cinza-medio);}
+.termo-socio-alerta{margin-top:10px;font-size:11px;font-weight:700;padding:8px 12px;border-radius:8px;background:#3D0000;border:1px solid var(--vermelho);color:#FF8A8A;}
 .btn-solicitar-tr{display:block;margin-top:12px;text-align:center;background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;cursor:pointer;text-decoration:none;}
 
 .empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
@@ -90,6 +94,7 @@ function carregarTermos() {
     const termos = Array.isArray(data) ? data : [];
     document.getElementById('meta-total').textContent = termos.length;
     renderizarLista(termos);
+    verificarTodosSocios(termos);
   };
   const s = document.createElement('script');
   s.id = 'jsonp-termos';
@@ -99,6 +104,11 @@ function carregarTermos() {
   };
   s.src = SCRIPT_URL + '?tipo=meus_termos&bd=' + encodeURIComponent(quemAtual) + '&callback=' + cb + '&t=' + Date.now();
   document.head.appendChild(s);
+}
+
+// TR OK = coluna U (Forms?) vazia. Qualquer texto preenchido conta como pendência.
+function trEstaOk(t) {
+  return !(t.forms_status || '').trim();
 }
 
 function renderizarLista(termos) {
@@ -111,8 +121,9 @@ function renderizarLista(termos) {
     const statusTexto = (t.forms_status || '').trim() === 'Não solicitou contrato'
       ? 'Não solicitou contrato de Take Rate'
       : (t.forms_status || 'Sem status de Forms');
+    const corInicial = trEstaOk(t) ? 'cor-verde' : 'cor-amarelo';
     return `
-    <div class="termo-card">
+    <div class="termo-card ${corInicial}" id="termo-${t.cnpj}">
       <div class="termo-top">
         <div class="termo-posto">${t.nome_posto || 'Posto não informado'}</div>
         <div class="termo-data">Assinado em ${t.data_assinatura || '-'}</div>
@@ -122,9 +133,82 @@ function renderizarLista(termos) {
       ${t.socio_assinou ? `<div class="termo-meta">Sócio que assinou: <b>${t.socio_assinou}</b></div>` : ''}
       ${t.etapa_funil ? `<div class="termo-meta">Etapa atual no funil: <b>${t.etapa_funil}</b></div>` : ''}
       <div class="termo-forms">${statusTexto}</div>
-      <a class="btn-solicitar-tr" href="${LINK_SOLICITAR_TR}" target="_blank" rel="noopener">Solicitar Termo de Take Rate</a>
+      <div id="socio-alerta-${t.cnpj}"></div>
+      ${trEstaOk(t) ? '' : `<a class="btn-solicitar-tr" href="${LINK_SOLICITAR_TR}" target="_blank" rel="noopener">Solicitar Termo de Take Rate</a>`}
     </div>`;
   }).join('');
+}
+
+// ── CHECAGEM DE SÓCIO ADMINISTRADOR (BrasilAPI) — mesma lógica da
+// Consulta de Assinaturas. Se divergir, sobrepõe a cor pra vermelho
+// (prioridade sobre o status de TR) e cria a tarefa urgente pro BD. ──
+function normalizarNome(str) {
+  return String(str || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase().replace(/[^a-z\s]/g, '').trim();
+}
+
+function nomesCorrespondem(a, b) {
+  const na = normalizarNome(a);
+  const nb = normalizarNome(b);
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  const palavrasA = na.split(/\s+/).filter(w => w.length > 2);
+  const palavrasB = nb.split(/\s+/).filter(w => w.length > 2);
+  const comuns = palavrasA.filter(w => palavrasB.includes(w));
+  return comuns.length >= 2;
+}
+
+async function verificarSocio(t) {
+  try {
+    const cnpjLimpo = t.cnpj.replace(/\D/g, '').padStart(14, '0');
+    const r = await fetch('https://brasilapi.com.br/api/cnpj/v1/' + cnpjLimpo);
+    if (!r.ok) return { status: 'erro_busca' };
+    const dados = await r.json();
+    const socios = Array.isArray(dados.qsa) ? dados.qsa : [];
+    const administradores = socios.filter(s => /administrador/i.test(s.qualificacao_socio || s.qual || ''));
+    const listaParaComparar = administradores.length ? administradores : socios;
+    const bate = listaParaComparar.some(s => nomesCorrespondem(t.socio_assinou, s.nome_socio || s.nome || ''));
+    return { status: bate ? 'ok' : 'divergente' };
+  } catch (err) {
+    return { status: 'erro_busca' };
+  }
+}
+
+async function verificarTodosSocios(termos) {
+  for (const t of termos) {
+    if (!t.cnpj || !t.socio_assinou) continue;
+    const resultado = await verificarSocio(t);
+    if (resultado.status === 'divergente') {
+      const card = document.getElementById('termo-' + t.cnpj);
+      const alertaEl = document.getElementById('socio-alerta-' + t.cnpj);
+      if (card) { card.classList.remove('cor-verde', 'cor-amarelo'); card.classList.add('cor-vermelho'); }
+      if (alertaEl) alertaEl.innerHTML = '<div class="termo-socio-alerta">⚠️ Nome do decisor não confere com o Contrato Social (Receita Federal). Tarefa urgente criada pro BD confirmar.</div>';
+      sinalizarDivergencia(t);
+    }
+    await new Promise(res => setTimeout(res, 400)); // intervalo entre chamadas, pra não estourar a API pública
+  }
+}
+
+function sinalizarDivergencia(t) {
+  const params = new URLSearchParams({
+    action: 'sinalizar_socio_divergente',
+    cnpj: t.cnpj,
+    posto: t.nome_posto || '',
+    bd: quemAtual,
+    socio_assinante: t.socio_assinou || ''
+  });
+  const cb = 'cbsocio_' + Date.now();
+  window[cb] = function() {
+    delete window[cb];
+    const el = document.getElementById('jsonp-socio');
+    if (el) el.remove();
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-socio';
+  s.onerror = function() { delete window[cb]; };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
 }
 </script>
 </body>
