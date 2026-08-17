@@ -43,6 +43,11 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .termo-meta b{color:var(--branco);}
 
 .contexto-box{background:#1C2A1C;border:1px solid #3A4A3A;border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;}
+.contato-box{background:#231A00;border:1px solid #FFA726;border-radius:var(--radius);padding:14px 20px;margin-bottom:14px;}
+.contato-label{font-size:10px;font-weight:700;color:var(--laranja);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;}
+.contato-valor{font-size:13px;font-weight:800;color:var(--branco);}
+.contato-origem{font-size:10px;color:#9A9A9A;margin-top:6px;}
+.visitas-contador{text-align:center;font-size:11px;color:var(--texto-claro);margin-bottom:12px;}
 .btn-pitch{width:100%;margin-bottom:14px;background:linear-gradient(90deg,#7B3FE4,#5C2FB8);color:var(--branco);border:none;border-radius:8px;padding:12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;}
 .btn-pitch:disabled{opacity:.5;cursor:not-allowed;}
 .pitch-box{margin-bottom:14px;background:#211A33;border:1.5px solid #5C2FB8;border-radius:var(--radius);padding:16px 20px;font-size:12.5px;line-height:1.7;color:var(--branco);}
@@ -170,6 +175,17 @@ function renderizarResultado(resultado) {
   }
 
   if (contexto.length) {
+    html += `<div class="visitas-contador">${contexto.length} visita${contexto.length > 1 ? 's' : ''} encontrada${contexto.length > 1 ? 's' : ''} em todas as waves</div>`;
+
+    if (resultado.contato && resultado.contato.contato) {
+      html += `
+        <div class="contato-box">
+          <div class="contato-label">📞 Contato coletado (${resultado.contato.tipo})</div>
+          <div class="contato-valor">${resultado.contato.contato}</div>
+          <div class="contato-origem">Coletado por <b>${resultado.contato.bd || '-'}</b> em ${resultado.contato.data || '-'}</div>
+        </div>`;
+    }
+
     const ultima = contexto[0];
     html += `
       <div class="contexto-box">
