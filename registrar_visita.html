@@ -275,7 +275,7 @@ function limparFormulario() {
   document.getElementById('f-cnpj').focus();
 }
 
-document.getElementById('form-visita').addEventListener('submit', async function(ev) {
+document.getElementById('form-visita').addEventListener('submit', function(ev) {
   ev.preventDefault();
 
   if (!ledSelecionado) { mostrarMsg('erro', 'Selecione se o posto possui painel de led.'); return; }
@@ -306,9 +306,11 @@ document.getElementById('form-visita').addEventListener('submit', async function
     resumo: document.getElementById('f-resumo').value
   });
 
-  try {
-    const resposta = await fetch(SCRIPT_URL + '?' + params.toString());
-    const resultado = await resposta.json();
+  const cb = 'cbvisita_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-visita');
+    if (el) el.remove();
     btn.disabled = false;
     btn.textContent = 'Salvar visita';
 
@@ -318,11 +320,17 @@ document.getElementById('form-visita').addEventListener('submit', async function
     }
     mostrarMsg('ok', 'Visita registrada com sucesso!');
     limparFormulario();
-  } catch (err) {
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-visita';
+  s.onerror = function() {
+    delete window[cb];
     btn.disabled = false;
     btn.textContent = 'Salvar visita';
     mostrarMsg('erro', 'Erro de conexão ao salvar. Tenta de novo.');
-  }
+  };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
 });
 </script>
 </body>
