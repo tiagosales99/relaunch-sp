@@ -115,7 +115,7 @@ function classeEtapa(etapa) {
   return '';
 }
 
-function buscarCnpj() {
+async function buscarCnpj() {
   const valor = document.getElementById('busca-cnpj').value.replace(/\D/g, '');
   const resultBox = document.getElementById('resultado');
   if (!valor) { resultBox.innerHTML = '<div class="busca-vazio">Digite um CNPJ antes de buscar.</div>'; return; }
@@ -125,25 +125,17 @@ function buscarCnpj() {
   btn.textContent = 'Buscando...';
   resultBox.innerHTML = '<div class="loading">Consultando em todas as waves...</div>';
 
-  const cb = 'cbconsulta_' + Date.now();
-  window[cb] = function(resultado) {
-    delete window[cb];
-    const el = document.getElementById('jsonp-consulta');
-    if (el) el.remove();
+  try {
+    const resposta = await fetch(SCRIPT_URL + '?tipo=consulta_cnpj&cnpj=' + encodeURIComponent(valor) + '&t=' + Date.now());
+    const resultado = await resposta.json();
     btn.disabled = false;
     btn.textContent = '🔍 Consultar CNPJ';
     renderizarResultado(resultado);
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-consulta';
-  s.onerror = function() {
-    delete window[cb];
+  } catch (err) {
     btn.disabled = false;
     btn.textContent = '🔍 Consultar CNPJ';
     resultBox.innerHTML = '<div class="busca-vazio">Erro ao buscar. Tenta de novo.</div>';
-  };
-  s.src = SCRIPT_URL + '?tipo=consulta_cnpj&cnpj=' + encodeURIComponent(valor) + '&callback=' + cb + '&t=' + Date.now();
-  document.head.appendChild(s);
+  }
 }
 
 function renderizarResultado(resultado) {
@@ -213,7 +205,7 @@ function renderizarResultado(resultado) {
   resultBox.innerHTML = html;
 }
 
-function gerarPitch() {
+async function gerarPitch() {
   const btn = document.getElementById('btn-pitch');
   const box = document.getElementById('pitch-resultado');
   btn.disabled = true;
@@ -226,11 +218,10 @@ function gerarPitch() {
     posto: postoAtual,
     responsavel: quemAtual
   });
-  const cb = 'cbpitchamplo_' + Date.now();
-  window[cb] = function(resultado) {
-    delete window[cb];
-    const el = document.getElementById('jsonp-pitch');
-    if (el) el.remove();
+
+  try {
+    const resposta = await fetch(SCRIPT_URL + '?' + params.toString());
+    const resultado = await resposta.json();
     btn.disabled = false;
     btn.textContent = '✨ Gerar sugestão de pitch';
     if (!resultado || resultado.status !== 'ok') {
@@ -239,17 +230,11 @@ function gerarPitch() {
     }
     box.innerHTML = '<div class="pitch-box"><p class="pitch-label">Mensagem sugerida</p><p id="pitch-texto" style="white-space:pre-wrap;">' + resultado.pitch + '</p>' +
       '<button class="btn-copiar" onclick="copiarPitch()">Copiar mensagem</button></div>';
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-pitch';
-  s.onerror = function() {
-    delete window[cb];
+  } catch (err) {
     btn.disabled = false;
     btn.textContent = '✨ Gerar sugestão de pitch';
     box.innerHTML = '<div class="pitch-box">Erro ao gerar a mensagem.</div>';
-  };
-  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
-  document.head.appendChild(s);
+  }
 }
 
 function copiarPitch() {
