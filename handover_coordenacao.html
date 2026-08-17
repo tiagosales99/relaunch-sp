@@ -33,6 +33,14 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .atribuir-row button{background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:0 20px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
 .atribuir-row button:disabled{opacity:.5;cursor:not-allowed;}
 
+.tarefa-fernanda{background:var(--cinza-escuro);border:1.5px solid var(--vermelho);border-left:5px solid var(--vermelho);border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;}
+.tarefa-fernanda-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;}
+.tarefa-fernanda-titulo{font-weight:800;font-size:14px;color:#FFFFFF;}
+.tarefa-fernanda-tag{font-size:10px;font-weight:800;padding:3px 10px;border-radius:12px;background:#3D0000;color:var(--vermelho);white-space:nowrap;}
+.tarefa-fernanda-desc{font-size:12px;color:#FF8A8A;margin-bottom:10px;}
+.tarefa-fernanda-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
+.btn-concluir-tarefa{width:100%;margin-top:10px;background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:9px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
+
 .empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
 .empty-icon{font-size:30px;margin-bottom:10px;}
 .loading{text-align:center;padding:50px 20px;color:var(--texto-claro);}
@@ -52,6 +60,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 </div>
 
 <div class="container">
+  <div id="minhas-tarefas"></div>
   <div id="lista"><div class="loading">Carregando...</div></div>
 </div>
 
@@ -66,7 +75,58 @@ window.onload = function() {
   quemAtual = params.get('nome') || '';
   document.getElementById('link-voltar').href = 'hub_nursery.html' + (quemAtual ? ('?nome=' + encodeURIComponent(quemAtual)) : '');
   carregar();
+  carregarMinhasTarefas();
 };
+
+// ── TAREFAS DA FERNANDA (ex: BD Engajamento faltando) ────────────
+function carregarMinhasTarefas() {
+  const cb = 'cbtaref_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-taref');
+    if (el) el.remove();
+    const pendentes = (Array.isArray(data) ? data : []).filter(t => t.status_tarefa === 'Pendente');
+    renderizarMinhasTarefas(pendentes);
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-taref';
+  s.onerror = function() { delete window[cb]; };
+  s.src = SCRIPT_URL + '?bd=' + encodeURIComponent(quemAtual || 'Fernanda') + '&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
+
+function renderizarMinhasTarefas(lista) {
+  const container = document.getElementById('minhas-tarefas');
+  if (!lista.length) { container.innerHTML = ''; return; }
+  container.innerHTML = lista.map(t => `
+    <div class="tarefa-fernanda" id="tarefa-${t.id_tarefa}">
+      <div class="tarefa-fernanda-top">
+        <div class="tarefa-fernanda-titulo">${t.posto || 'Posto não informado'}</div>
+        <div class="tarefa-fernanda-tag">${t.prioridade || '-'}</div>
+      </div>
+      <div class="tarefa-fernanda-desc">${t.tarefa || ''}</div>
+      <div class="tarefa-fernanda-meta">CNPJ: <b>${t.cnpj}</b> · Prazo: ${t.prazo || '-'}</div>
+      <button class="btn-concluir-tarefa" onclick="concluirMinhaTarefa('${t.id_tarefa}')">✓ Já resolvi</button>
+    </div>`).join('');
+}
+
+function concluirMinhaTarefa(id) {
+  const params = new URLSearchParams({ action: 'concluir', id_tarefa: id });
+  const cb = 'cbconctar_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-conctar');
+    if (el) el.remove();
+    if (!resultado || resultado.status !== 'ok') { alert('Erro ao concluir. Tenta de novo.'); return; }
+    const card = document.getElementById('tarefa-' + id);
+    if (card) card.remove();
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-conctar';
+  s.onerror = function() { delete window[cb]; alert('Erro ao concluir. Tenta de novo.'); };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
+}
 
 function carregar() {
   const cb = 'cbatrib_' + Date.now();
