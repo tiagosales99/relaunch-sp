@@ -34,6 +34,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .termo-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
 .termo-meta b{color:var(--branco);}
 .termo-forms{display:inline-block;margin-top:10px;font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;background:var(--cinza-medio);}
+.btn-solicitar-tr{display:block;margin-top:12px;text-align:center;background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:10px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;cursor:pointer;text-decoration:none;}
 
 .empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
 .empty-icon{font-size:30px;margin-bottom:10px;}
@@ -65,6 +66,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 
 <script>
 const SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKWhHlEG9zMBbpg7ADTuU_Ares6xivwmSrMvFnj0689ILmisASnfgZie0botnZ0A/exec';
+const LINK_SOLICITAR_TR = 'https://script.google.com/a/macros/99app.com/s/AKfycbzsvM1NT6z6aVd9detSwVtPhPkVKVrI4iJzKF-_2ALTlJBEZk5R_gkyO5wvhwUorYy_/exec';
 
 let quemAtual = '';
 
@@ -105,7 +107,11 @@ function renderizarLista(termos) {
     container.innerHTML = '<div class="empty"><div class="empty-icon">📄</div>Nenhum termo assinado encontrado esse mês.</div>';
     return;
   }
-  container.innerHTML = termos.map(t => `
+  container.innerHTML = termos.map(t => {
+    const statusTexto = (t.forms_status || '').trim() === 'Não solicitou contrato'
+      ? 'Não solicitou contrato de Take Rate'
+      : (t.forms_status || 'Sem status de Forms');
+    return `
     <div class="termo-card">
       <div class="termo-top">
         <div class="termo-posto">${t.nome_posto || 'Posto não informado'}</div>
@@ -115,8 +121,10 @@ function renderizarLista(termos) {
       <div class="termo-meta">Prioridade: <b>${t.prioridade || '-'}</b> ${t.wave ? '· ' + t.wave : ''}</div>
       ${t.socio_assinou ? `<div class="termo-meta">Sócio que assinou: <b>${t.socio_assinou}</b></div>` : ''}
       ${t.etapa_funil ? `<div class="termo-meta">Etapa atual no funil: <b>${t.etapa_funil}</b></div>` : ''}
-      <div class="termo-forms">${t.forms_status || 'Sem status de Forms'}</div>
-    </div>`).join('');
+      <div class="termo-forms">${statusTexto}</div>
+      <a class="btn-solicitar-tr" href="${LINK_SOLICITAR_TR}" target="_blank" rel="noopener">Solicitar Termo de Take Rate</a>
+    </div>`;
+  }).join('');
 }
 </script>
 </body>
