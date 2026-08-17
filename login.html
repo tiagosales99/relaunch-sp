@@ -135,7 +135,7 @@ function abrirCard(papel) {
   document.getElementById('form-' + papel).classList.add('show');
 }
 
-async function entrar(papel) {
+function entrar(papel) {
   const nome = document.getElementById('nome-' + papel).value;
   const senha = document.getElementById('senha-' + papel).value;
   const erroEl = document.getElementById('erro-' + papel);
@@ -147,9 +147,11 @@ async function entrar(papel) {
   if (btn) { btn.disabled = true; btn.textContent = 'Entrando...'; }
 
   const params = new URLSearchParams({ action: 'login', nome, senha, papel });
-  try {
-    const resposta = await fetch(SCRIPT_URL + '?' + params.toString());
-    const resultado = await resposta.json();
+  const cb = 'cblogin_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-login');
+    if (el) el.remove();
     if (!resultado || resultado.status !== 'ok') {
       erroEl.textContent = 'Usuário ou senha incorretos.';
       erroEl.style.display = 'block';
@@ -157,11 +159,17 @@ async function entrar(papel) {
       return;
     }
     window.location.href = DESTINOS[papel] + '?nome=' + encodeURIComponent(NOME_COMPLETO_BD[resultado.nome] || resultado.nome);
-  } catch (err) {
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-login';
+  s.onerror = function() {
+    delete window[cb];
     erroEl.textContent = 'Erro ao conectar. Tenta de novo.';
     erroEl.style.display = 'block';
     if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
-  }
+  };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
 }
 
 document.querySelectorAll('.form-login input').forEach(function(input) {
