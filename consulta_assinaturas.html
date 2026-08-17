@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Consulta de Assinaturas , 99Abastece Relaunch SP</title>
+<title>T(I.A)GA , 99Abastece Relaunch SP</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -43,6 +43,11 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .termo-meta b{color:var(--branco);}
 
 .contexto-box{background:#1C2A1C;border:1px solid #3A4A3A;border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;}
+.btn-pitch{width:100%;margin-bottom:14px;background:linear-gradient(90deg,#7B3FE4,#5C2FB8);color:var(--branco);border:none;border-radius:8px;padding:12px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12.5px;cursor:pointer;}
+.btn-pitch:disabled{opacity:.5;cursor:not-allowed;}
+.pitch-box{margin-bottom:14px;background:#211A33;border:1.5px solid #5C2FB8;border-radius:var(--radius);padding:16px 20px;font-size:12.5px;line-height:1.7;color:var(--branco);}
+.pitch-label{font-size:10px;color:#B8A8E0;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+.btn-copiar{margin-top:10px;width:100%;background:#5C2FB8;color:#fff;border:none;border-radius:6px;padding:8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;cursor:pointer;}
 .contexto-label{font-size:10px;font-weight:700;color:var(--texto-claro);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
 .contexto-texto{font-size:12.5px;color:var(--branco);line-height:1.5;}
 .contexto-origem{font-size:10px;color:#6E7A6E;margin-top:8px;}
@@ -64,8 +69,8 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
   <div class="topbar-brand">
     <div class="topbar-logo">99</div>
     <div>
-      <div class="topbar-title">Consulta de Assinaturas</div>
-      <div class="topbar-sub">Busca por CNPJ, em todos os BDs e waves</div>
+      <div class="topbar-title">T(I.A)GA</div>
+      <div class="topbar-sub">Boot Copiloto</div>
     </div>
   </div>
   <a class="topbar-voltar" id="link-voltar" href="hub_bd.html">← Menu</a>
@@ -85,6 +90,8 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 const SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKWhHlEG9zMBbpg7ADTuU_Ares6xivwmSrMvFnj0689ILmisASnfgZie0botnZ0A/exec';
 
 let quemAtual = '';
+let cnpjAtual = '';
+let postoAtual = '';
 
 window.onload = function() {
   const params = new URLSearchParams(window.location.search);
@@ -142,6 +149,8 @@ function renderizarResultado(resultado) {
   }
 
   const contexto = Array.isArray(resultado.contexto) ? resultado.contexto : [];
+  cnpjAtual = document.getElementById('busca-cnpj').value.replace(/\D/g, '');
+  postoAtual = (resultado.termo && resultado.termo.nome_posto) || '';
   let html = '';
 
   if (resultado.status === 'ok' && resultado.termo) {
@@ -169,6 +178,9 @@ function renderizarResultado(resultado) {
         <div class="contexto-origem">Registrado por <b>${ultima.bd || '-'}</b> em ${ultima.data || '-'} <span class="historico-tag">${ultima.origem}</span></div>
       </div>`;
 
+    html += `<button class="btn-pitch" id="btn-pitch" onclick="gerarPitch()">✨ Gerar sugestão de pitch</button>
+      <div id="pitch-resultado"></div>`;
+
     if (contexto.length > 1) {
       html += `
         <div class="historico-box">
@@ -183,6 +195,50 @@ function renderizarResultado(resultado) {
   }
 
   resultBox.innerHTML = html;
+}
+
+function gerarPitch() {
+  const btn = document.getElementById('btn-pitch');
+  const box = document.getElementById('pitch-resultado');
+  btn.disabled = true;
+  btn.textContent = 'Gerando...';
+  box.innerHTML = '';
+
+  const params = new URLSearchParams({
+    action: 'gerar_pitch_amplo',
+    cnpj: cnpjAtual,
+    posto: postoAtual,
+    responsavel: quemAtual
+  });
+  const cb = 'cbpitchamplo_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-pitch');
+    if (el) el.remove();
+    btn.disabled = false;
+    btn.textContent = '✨ Gerar sugestão de pitch';
+    if (!resultado || resultado.status !== 'ok') {
+      box.innerHTML = '<div class="pitch-box">Não consegui gerar a mensagem: ' + (resultado && resultado.msg || 'erro desconhecido') + '</div>';
+      return;
+    }
+    box.innerHTML = '<div class="pitch-box"><p class="pitch-label">Mensagem sugerida</p><p id="pitch-texto" style="white-space:pre-wrap;">' + resultado.pitch + '</p>' +
+      '<button class="btn-copiar" onclick="copiarPitch()">Copiar mensagem</button></div>';
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-pitch';
+  s.onerror = function() {
+    delete window[cb];
+    btn.disabled = false;
+    btn.textContent = '✨ Gerar sugestão de pitch';
+    box.innerHTML = '<div class="pitch-box">Erro ao gerar a mensagem.</div>';
+  };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
+}
+
+function copiarPitch() {
+  const texto = document.getElementById('pitch-texto').innerText;
+  navigator.clipboard.writeText(texto).then(() => alert('Mensagem copiada!'));
 }
 </script>
 </body>
