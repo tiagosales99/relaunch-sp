@@ -87,6 +87,28 @@ body{font-family:'Montserrat',sans-serif;background:var(--preto);color:var(--bra
     </div>
   </div>
 
+  <div class="card" id="card-NURSERY">
+    <div class="card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4.5 8-11.8A8 8 0 0 0 4 10.2C4 17.5 12 22 12 22z"/><circle cx="12" cy="10" r="3"/></svg></div>
+    <div class="card-titulo">BD Nursery</div>
+    <div class="card-desc">Gestão pós-listagem e handover</div>
+    <button class="card-abrir" onclick="abrirCard('NURSERY')">Entrar</button>
+    <div class="form-login" id="form-NURSERY">
+      <label>Quem é você?</label>
+      <select id="nome-NURSERY">
+        <option value="">Selecione</option>
+        <option value="Matheus">Matheus</option>
+        <option value="Everton">Everton</option>
+        <option value="Erik">Erik</option>
+        <option value="Mainart">Mainart</option>
+        <option value="Fernanda">Fernanda</option>
+      </select>
+      <label>Senha</label>
+      <input type="password" id="senha-NURSERY">
+      <button class="btn-entrar" onclick="entrar('NURSERY')">Entrar</button>
+      <div class="erro-login" id="erro-NURSERY">Usuário ou senha incorretos.</div>
+    </div>
+  </div>
+
   <div class="card" id="card-GERENCIAL">
     <div class="card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></div>
     <div class="card-titulo">Dash Gerencial</div>
@@ -113,6 +135,7 @@ const SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKW
 const DESTINOS = {
   'SDR': 'painel_revisita.html',
   'BD': 'hub_bd.html',
+  'NURSERY': 'hub_nursery.html',
   'GERENCIAL': 'dashboard_relaunch.html'
 };
 
