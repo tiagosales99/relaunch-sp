@@ -95,6 +95,12 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
       <div class="menu-card-sub">Transição de postos listados pro Nursery</div>
     </a>
 
+    <a class="menu-card" style="border-left:6px solid #7B3FE4;" id="link-reunioes" href="#">
+      <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+      <div class="menu-card-titulo">Reuniões Agendadas</div>
+      <div class="menu-card-sub">Reuniões marcadas pela SDR pra você fechar</div>
+    </a>
+
   </div>
 </div>
 
@@ -104,6 +110,7 @@ window.onload = function() {
   const nome = params.get('nome') || '';
   const sufixo = nome ? ('?nome=' + encodeURIComponent(nome)) : '';
   document.getElementById('link-handover').href = 'handover_aquisicao.html' + sufixo;
+  document.getElementById('link-reunioes').href = 'reunioes_aquisicao.html' + sufixo;
   document.getElementById('link-visita').href = 'registrar_visita.html' + sufixo;
   document.getElementById('link-tarefas').href = 'tarefas_bd.html' + sufixo;
   document.getElementById('link-farol').href = 'farol_metas.html' + sufixo;
