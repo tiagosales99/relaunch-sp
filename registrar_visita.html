@@ -18,6 +18,8 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .topbar-logo{width:34px;height:34px;background:var(--preto);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--amarelo);}
 .topbar-title{font-weight:800;font-size:16px;color:var(--preto);line-height:1.1;}
 .topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
+.topbar-voltar{background:var(--preto);color:var(--amarelo);border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+#quem-sou-wrap{display:none !important;}
 
 .container{max-width:900px;margin:0 auto;padding:24px 24px 80px;}
 
@@ -66,6 +68,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
       <div class="topbar-sub">99Abastece Relaunch SP</div>
     </div>
   </div>
+  <a class="topbar-voltar" id="link-voltar" href="hub_bd.html">← Menu</a>
 </div>
 
 <div class="container">
@@ -92,11 +95,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 
     <div class="card">
       <div class="card-titulo">Dados do posto</div>
-
-      <div class="campo">
-        <label>Qual a data de hoje?<span class="obrig">*</span></label>
-        <input type="date" id="f-data" required>
-      </div>
+      <input type="hidden" id="f-data">
 
       <div class="campo">
         <label>Qual o CNPJ do posto?<span class="obrig">*</span></label>
@@ -234,8 +233,9 @@ window.onload = function() {
   }
   quemAtual = document.getElementById('quem-sou').value;
   atualizarVisibilidade();
+  document.getElementById('link-voltar').href = 'hub_bd.html' + (quemAtual ? ('?nome=' + encodeURIComponent(quemAtual)) : '');
 
-  // Data de hoje pré-preenchida
+  // Data de hoje preenchida automaticamente (sem opção manual)
   const hoje = new Date();
   const iso = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0') + '-' + String(hoje.getDate()).padStart(2,'0');
   document.getElementById('f-data').value = iso;
