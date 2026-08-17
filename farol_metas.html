@@ -85,10 +85,12 @@ function formatarPercentual(valor) {
   return Math.round(pct) + '%';
 }
 
-async function carregarFarol() {
-  try {
-    const resposta = await fetch(SCRIPT_URL + '?tipo=farol_metas&bd=' + encodeURIComponent(quemAtual) + '&t=' + Date.now());
-    const resultado = await resposta.json();
+function carregarFarol() {
+  const cb = 'cbfarol_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-farol');
+    if (el) el.remove();
 
     if (!resultado || resultado.status !== 'ok') {
       document.getElementById('conteudo').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>' + (resultado && resultado.msg || 'Não encontrei sua meta esse mês.') + '</div>';
@@ -122,9 +124,15 @@ async function carregarFarol() {
         <div class="farol-gap">Faltam <b>${Math.abs(resultado.gap)}</b> termo(s) pra bater a meta</div>
       </div>
     `;
-  } catch (err) {
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-farol';
+  s.onerror = function() {
+    delete window[cb];
     document.getElementById('conteudo').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Não consegui buscar o farol. Tenta recarregar a página.</div>';
-  }
+  };
+  s.src = SCRIPT_URL + '?tipo=farol_metas&bd=' + encodeURIComponent(quemAtual) + '&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
 }
 </script>
 </body>
