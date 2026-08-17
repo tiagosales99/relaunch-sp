@@ -135,7 +135,7 @@ function abrirCard(papel) {
   document.getElementById('form-' + papel).classList.add('show');
 }
 
-function entrar(papel) {
+async function entrar(papel) {
   const nome = document.getElementById('nome-' + papel).value;
   const senha = document.getElementById('senha-' + papel).value;
   const erroEl = document.getElementById('erro-' + papel);
@@ -143,29 +143,35 @@ function entrar(papel) {
 
   if (!nome || !senha) { erroEl.textContent = 'Selecione seu nome e digite a senha.'; erroEl.style.display = 'block'; return; }
 
+  const btn = document.querySelector('#form-' + papel + ' .btn-entrar');
+  if (btn) { btn.disabled = true; btn.textContent = 'Entrando...'; }
+
   const params = new URLSearchParams({ action: 'login', nome, senha, papel });
-  const cb = 'cblogin_' + Date.now();
-  window[cb] = function(resultado) {
-    delete window[cb];
-    const el = document.getElementById('jsonp-login');
-    if (el) el.remove();
+  try {
+    const resposta = await fetch(SCRIPT_URL + '?' + params.toString());
+    const resultado = await resposta.json();
     if (!resultado || resultado.status !== 'ok') {
       erroEl.textContent = 'Usuário ou senha incorretos.';
       erroEl.style.display = 'block';
+      if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
       return;
     }
     window.location.href = DESTINOS[papel] + '?nome=' + encodeURIComponent(NOME_COMPLETO_BD[resultado.nome] || resultado.nome);
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-login';
-  s.onerror = function() {
-    delete window[cb];
+  } catch (err) {
     erroEl.textContent = 'Erro ao conectar. Tenta de novo.';
     erroEl.style.display = 'block';
-  };
-  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
-  document.head.appendChild(s);
+    if (btn) { btn.disabled = false; btn.textContent = 'Entrar'; }
+  }
 }
+
+document.querySelectorAll('.form-login input').forEach(function(input) {
+  input.addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') {
+      const papel = input.id.split('-')[1];
+      entrar(papel);
+    }
+  });
+});
 </script>
 </body>
 </html>
