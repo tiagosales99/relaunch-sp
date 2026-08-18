@@ -58,15 +58,7 @@ window.onload = function() {
   const params = new URLSearchParams(window.location.search);
   const nome = params.get('nome') || '';
   const sufixo = nome ? ('?nome=' + encodeURIComponent(nome)) : '';
-  const ehFernanda = nome.trim().toLowerCase() === 'fernanda';
-
-  if (ehFernanda) {
-    document.getElementById('link-handover').href = 'handover_coordenacao.html' + sufixo;
-    document.getElementById('titulo-handover').textContent = 'Atribuir Handovers';
-    document.getElementById('sub-handover').textContent = 'Postos listados aguardando definição do Nursery responsável';
-  } else {
-    document.getElementById('link-handover').href = 'handover_nursery.html' + sufixo;
-  }
+  document.getElementById('link-handover').href = 'handover_nursery.html' + sufixo;
 };
 </script>
 </body>
