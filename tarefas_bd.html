@@ -146,21 +146,38 @@ function carregarSolicitacoesPendentes() {
   document.head.appendChild(s);
 }
 
+function diasDesde(dataBr) {
+  if (!dataBr) return null;
+  const [dia, mes, ano] = dataBr.split('/');
+  if (!dia || !mes || !ano) return null;
+  const data = new Date(Number(ano), Number(mes) - 1, Number(dia));
+  const hoje = new Date();
+  return Math.floor((hoje - data) / (1000 * 60 * 60 * 24));
+}
+
 function renderizarSolicitacoes(lista) {
   const container = document.getElementById('solicitacoes-pendentes');
   if (!lista.length) { container.innerHTML = ''; return; }
-  container.innerHTML = lista.map(s => `
+
+  // Mais antiga primeiro — é a mais urgente
+  const ordenada = [...lista].sort((a, b) => (diasDesde(b.data_solicitacao) || 0) - (diasDesde(a.data_solicitacao) || 0));
+
+  container.innerHTML = ordenada.map(s => {
+    const dias = diasDesde(s.data_solicitacao);
+    const rotuloDias = dias === null ? '' : dias === 0 ? 'Hoje' : dias === 1 ? 'Há 1 dia' : `Há ${dias} dias`;
+    return `
     <div class="solicitacao-card" id="solic-${s.id_solicitacao}">
       <div class="solicitacao-top">
         <div class="solicitacao-posto">📌 ${s.posto || 'Posto não informado'}</div>
-        <div class="solicitacao-tag">HIGH PRIORITY</div>
+        <div class="solicitacao-tag">HIGH PRIORITY${rotuloDias ? ' · ' + rotuloDias : ''}</div>
       </div>
       <div class="solicitacao-meta">CNPJ: <b>${s.cnpj}</b> · SDR pediu o contato do decisor pra retomar esse lead</div>
       <div class="solicitacao-row">
         <input type="text" id="input-contato-${s.id_solicitacao}" placeholder="Nome e telefone do decisor">
         <button id="btn-enviar-${s.id_solicitacao}" onclick="responderSolicitacao('${s.id_solicitacao}')">Enviar</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function responderSolicitacao(id) {
