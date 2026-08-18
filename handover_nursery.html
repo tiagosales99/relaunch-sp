@@ -24,6 +24,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 
 .card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:5px solid var(--laranja);border-radius:var(--radius);padding:22px 26px;margin-bottom:16px;}
 .card.status-validado{border-left-color:var(--verde);}
+.card.status-acao{border-left-color:var(--amarelo);}
 .card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
 .card-posto{font-weight:800;font-size:15px;}
 .card-status{font-size:10px;font-weight:800;padding:3px 10px;border-radius:12px;background:var(--cinza-medio);white-space:nowrap;}
@@ -33,6 +34,10 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .btn-concluir{margin-top:14px;width:100%;background:var(--verde);color:var(--preto);border:none;border-radius:8px;padding:11px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12.5px;cursor:pointer;}
 .btn-concluir:disabled{opacity:.5;cursor:not-allowed;}
 .aviso-aguardando{margin-top:10px;font-size:11px;color:var(--texto-claro);font-style:italic;}
+.print-box{margin-top:12px;}
+.link-print{display:block;background:var(--cinza-medio);border:1.5px solid var(--amarelo);border-radius:8px;padding:10px 14px;color:var(--amarelo);font-weight:700;font-size:12.5px;text-decoration:none;margin-bottom:8px;}
+.sem-print{margin-bottom:8px;font-size:11px;color:var(--vermelho);}
+.gemini-aviso{background:var(--cinza-medio);border-radius:8px;padding:9px 12px;font-size:11.5px;color:var(--texto-claro);}
 
 .empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
 .empty-icon{font-size:30px;margin-bottom:10px;}
@@ -73,7 +78,9 @@ window.onload = function() {
 };
 
 function classeStatus(status) {
-  return status === 'Validado' ? 'status-validado' : '';
+  if (status === 'Handover concluído') return 'status-validado';
+  if (status === 'Print enviado, aguardando validação') return 'status-acao';
+  return '';
 }
 
 function carregar() {
@@ -102,7 +109,20 @@ function renderizar(lista) {
   }
   container.innerHTML = lista.map(h => {
     const classe = classeStatus(h.status);
-    const podeConcluir = h.status === 'Validado';
+    const podeConfirmar = h.status === 'Print enviado, aguardando validação';
+    let acao;
+    if (podeConfirmar) {
+      acao = `
+        <div class="print-box">
+          ${h.print_drive_url ? `<a class="link-print" href="${h.print_drive_url}" target="_blank">🖼️ Ver print enviado pelo BD</a>` : '<div class="sem-print">Print não pôde ser salvo — confere direto com o BD.</div>'}
+          ${h.gemini_obs ? `<div class="gemini-aviso">🤖 Gemini: ${h.gemini_obs}</div>` : ''}
+        </div>
+        <button class="btn-concluir" onclick="confirmar('${h.id_handover}')">✓ Vi o print, confirmar handover</button>`;
+    } else if (h.status === 'Handover concluído') {
+      acao = '';
+    } else {
+      acao = `<div class="aviso-aguardando">Aguardando o Aquisição criar o grupo e enviar o print da comunicação.</div>`;
+    }
     return `
     <div class="card ${classe}" id="card-${h.id_handover}">
       <div class="card-top">
@@ -111,34 +131,32 @@ function renderizar(lista) {
       </div>
       <div class="card-meta">CNPJ: <b>${h.cnpj}</b></div>
       <div class="card-meta">BD de Aquisição: <b>${h.bd_aquisicao || '-'}</b></div>
-      ${podeConcluir
-        ? `<button class="btn-concluir" onclick="concluir('${h.id_handover}')">✓ Marcar handover concluído</button>`
-        : `<div class="aviso-aguardando">Aguardando o Aquisição criar o grupo e enviar o print da comunicação.</div>`}
+      ${acao}
     </div>`;
   }).join('');
 }
 
-function concluir(id) {
+function confirmar(id) {
   const btn = document.querySelector('#card-' + id + ' .btn-concluir');
-  if (btn) { btn.disabled = true; btn.textContent = 'Concluindo...'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Confirmando...'; }
 
-  const params = new URLSearchParams({ action: 'concluir_handover', id_handover: id });
-  const cb = 'cbconcluirh_' + Date.now();
+  const params = new URLSearchParams({ action: 'confirmar_print_nursery', id_handover: id });
+  const cb = 'cbconfirmarh_' + Date.now();
   window[cb] = function(resultado) {
     delete window[cb];
-    const el = document.getElementById('jsonp-concluirh');
+    const el = document.getElementById('jsonp-confirmarh');
     if (el) el.remove();
     if (!resultado || resultado.status !== 'ok') {
       alert('Erro: ' + (resultado && resultado.msg || 'desconhecido'));
-      if (btn) { btn.disabled = false; btn.textContent = '✓ Marcar handover concluído'; }
+      if (btn) { btn.disabled = false; btn.textContent = '✓ Vi o print, confirmar handover'; }
       return;
     }
     const card = document.getElementById('card-' + id);
     if (card) card.remove();
   };
   const s = document.createElement('script');
-  s.id = 'jsonp-concluirh';
-  s.onerror = function() { delete window[cb]; alert('Erro ao concluir. Tenta de novo.'); };
+  s.id = 'jsonp-confirmarh';
+  s.onerror = function() { delete window[cb]; alert('Erro ao confirmar. Tenta de novo.'); };
   s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
   document.head.appendChild(s);
 }
