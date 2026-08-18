@@ -33,6 +33,9 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .atribuir-row button{background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:0 20px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
 .atribuir-row button:disabled{opacity:.5;cursor:not-allowed;}
 
+.sugestao-nursery{background:#2A2400;border:1px solid var(--amarelo);border-radius:8px;padding:9px 12px;margin-top:10px;font-size:12px;color:#FFE066;}
+.btn-usar-sugestao{background:none;border:none;color:var(--amarelo);text-decoration:underline;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;padding:0;}
+
 .tarefa-fernanda{background:var(--cinza-escuro);border:1.5px solid var(--vermelho);border-left:5px solid var(--vermelho);border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;}
 .tarefa-fernanda-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;}
 .tarefa-fernanda-titulo{font-weight:800;font-size:14px;color:#FFFFFF;}
@@ -152,14 +155,19 @@ function renderizar(lista) {
     container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>Nenhum handover aguardando atribuição agora.</div>';
     return;
   }
-  container.innerHTML = lista.map(h => `
+  container.innerHTML = lista.map(h => {
+    const temSugestao = h.sugestao_nursery && h.sugestao_nursery.length > 0;
+    return `
     <div class="card" id="card-${h.id_handover}">
       <div class="card-top">
         <div class="card-posto">${h.posto || 'Posto não informado'}</div>
       </div>
       <div class="card-meta">CNPJ: <b>${h.cnpj}</b></div>
       <div class="card-meta">BD de Aquisição: <b>${h.bd_aquisicao || '-'}</b></div>
+      ${h.rede ? `<div class="card-meta">Rede: <b>${h.rede}</b></div>` : ''}
+      ${h.sub ? `<div class="card-meta">Sub: <b>${h.sub}</b></div>` : ''}
       <div class="card-meta">Listado em: <b>${h.data_criacao || '-'}</b></div>
+      ${temSugestao ? `<div class="sugestao-nursery">💡 <b>${h.sugestao_nursery}</b> já atende ${h.sugestao_count} posto(s) dessa rede — <button class="btn-usar-sugestao" onclick="usarSugestao('${h.id_handover}','${h.sugestao_nursery}')">usar essa sugestão</button></div>` : ''}
       <div class="atribuir-row">
         <select id="select-${h.id_handover}">
           <option value="">Escolher Nursery</option>
@@ -167,7 +175,13 @@ function renderizar(lista) {
         </select>
         <button id="btn-${h.id_handover}" onclick="atribuir('${h.id_handover}')">Atribuir</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+function usarSugestao(id, nursery) {
+  const select = document.getElementById('select-' + id);
+  if (select) select.value = nursery;
 }
 
 function atribuir(id) {
