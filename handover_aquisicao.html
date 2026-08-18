@@ -38,8 +38,10 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .upload-box{margin-top:14px;}
 .upload-box input[type=file]{width:100%;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:12px;padding:9px 10px;margin-bottom:10px;}
 
-.aviso-rejeitado{margin-top:10px;background:#3D0000;border:1px solid var(--vermelho);border-radius:8px;padding:10px 14px;font-size:11.5px;color:#FF8A8A;}
+.gemini-fyi{margin-top:8px;background:var(--cinza-medio);border-radius:8px;padding:9px 12px;font-size:11.5px;color:var(--texto-claro);}
 .aviso-aguardando{margin-top:10px;font-size:11px;color:var(--texto-claro);font-style:italic;}
+.btn-acao-secundario{width:100%;background:none;border:1.5px solid var(--borda);color:var(--texto-claro);border-radius:8px;padding:9px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:11.5px;cursor:pointer;}
+.btn-acao-secundario:disabled{opacity:.5;cursor:not-allowed;}
 
 .empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
 .empty-icon{font-size:30px;margin-bottom:10px;}
@@ -111,16 +113,20 @@ function renderizar() {
 
     if (h.status === 'Aguardando início') {
       acoes = `<button class="btn-acao" onclick="marcarGrupoCriado('${h.id_handover}')">Marcar grupo de WhatsApp criado</button>`;
-    } else if (h.status === 'Grupo de WhatsApp criado' || h.status === 'Print enviado, aguardando validação') {
-      const rejeitado = h.status === 'Print enviado, aguardando validação' && h.gemini_obs;
+    } else if (h.status === 'Grupo de WhatsApp criado') {
       acoes = `
-        ${rejeitado ? `<div class="aviso-rejeitado">⚠️ O print anterior não foi validado: ${h.gemini_obs}. Envie um novo print.</div>` : ''}
         <div class="upload-box">
           <input type="file" id="arquivo-${h.id_handover}" accept="image/*">
           <button class="btn-acao" id="btn-print-${h.id_handover}" onclick="enviarPrint('${h.id_handover}')">Enviar print pra validação</button>
         </div>`;
-    } else if (h.status === 'Validado') {
-      acoes = `<div class="aviso-aguardando">Print validado. Aguardando o Nursery confirmar o handover.</div>`;
+    } else if (h.status === 'Print enviado, aguardando validação') {
+      acoes = `
+        <div class="aviso-aguardando">Print enviado. Aguardando o Nursery conferir e confirmar o handover.</div>
+        ${h.gemini_obs ? `<div class="gemini-fyi">🤖 Gemini: ${h.gemini_obs}</div>` : ''}
+        <div class="upload-box">
+          <input type="file" id="arquivo-${h.id_handover}" accept="image/*">
+          <button class="btn-acao-secundario" id="btn-print-${h.id_handover}" onclick="enviarPrint('${h.id_handover}')">Enviar outro print, se precisar</button>
+        </div>`;
     }
 
     return `
@@ -161,8 +167,9 @@ function enviarPrint(id) {
   if (!arquivo) { alert('Escolhe uma imagem antes de enviar.'); return; }
 
   const btn = document.getElementById('btn-print-' + id);
+  const textoOriginal = btn.textContent;
   btn.disabled = true;
-  btn.textContent = 'Enviando e validando...';
+  btn.textContent = 'Enviando...';
 
   const leitor = new FileReader();
   leitor.onload = async function() {
@@ -184,20 +191,16 @@ function enviarPrint(id) {
       if (!resultado || resultado.status !== 'ok') {
         alert('Erro ao enviar: ' + (resultado && resultado.msg || 'desconhecido'));
         btn.disabled = false;
-        btn.textContent = 'Enviar print pra validação';
+        btn.textContent = textoOriginal;
         return;
       }
 
-      if (resultado.validado) {
-        alert('Print validado! O handover avançou pra aguardar o Nursery concluir.');
-      } else {
-        alert('O print não foi validado: ' + (resultado.motivo || 'motivo não informado') + '. Envie um novo print.');
-      }
+      alert('Print enviado! Agora é só aguardar o Nursery conferir e confirmar o handover.');
       carregar();
     } catch (err) {
       alert('Erro de conexão ao enviar o print. Tenta de novo.');
       btn.disabled = false;
-      btn.textContent = 'Enviar print pra validação';
+      btn.textContent = textoOriginal;
     }
   };
   leitor.readAsDataURL(arquivo);
