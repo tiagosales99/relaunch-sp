@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Pedidos de Listagem</title>
+<style>
+  * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+  body { background:#1A1A1A; margin:0; padding:20px; }
+  h1 { color:#FFD600; font-size:17px; font-weight:500; margin:0 0 4px; }
+  .sub { color:#B4B2A9; font-size:12px; margin-bottom:16px; }
+  .card { background:#FFFFFF; border-radius:12px; padding:16px; margin-bottom:16px; max-width:900px; }
+  .card-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .card-head span { font-size:13px; font-weight:500; color:#1A1A1A; }
+  .btn-copiar { display:flex; align-items:center; gap:6px; font-size:12px; padding:6px 12px; border-radius:6px; border:none; background:#FFD600; color:#1A1A1A; font-weight:500; cursor:pointer; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  td { padding:6px 8px; border:0.5px solid #D3D1C7; color:#2C2C2A; }
+  tr:first-child td { background:#F1EFE8; font-weight:500; }
+  .vazio { color:#B4B2A9; font-size:13px; padding:20px; text-align:center; }
+  .btn-enviado { margin-top:10px; font-size:12px; padding:6px 12px; border-radius:6px; border:0.5px solid #D3D1C7; background:#FFFFFF; color:#5F5E5A; cursor:pointer; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#FFD600; color:#1A1A1A; padding:8px 16px; border-radius:8px; font-size:12px; opacity:0; transition:opacity .2s; }
+</style>
+</head>
+<body>
+  <h1>Pedidos de listagem</h1>
+  <div class="sub" id="contador"></div>
+  <div id="lista"></div>
+  <div class="toast" id="toast">Copiado!</div>
+
+<script>
+// PREENCHER: mesma URL do Apps Script já usada nas outras telas
+const APPS_SCRIPT_URL = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
+
+async function carregar() {
+  const resp = await fetch(`${APPS_SCRIPT_URL}?tipo=pedidos_listagem_tiago`);
+  const dados = await resp.json();
+  const lista = document.getElementById('lista');
+  const contador = document.getElementById('contador');
+  lista.innerHTML = '';
+
+  if (!dados.length) {
+    contador.textContent = 'Nenhum pedido pronto no momento.';
+    lista.innerHTML = '<div class="vazio">Assim que um BD Aquisição concluir os checks de um posto, ele aparece aqui.</div>';
+    return;
+  }
+
+  contador.textContent = `${dados.length} posto(s) prontos para enviar ao Planning/Onboarding/Ops`;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const linhasHtml = dados.map(p => `
+    <tr>
+      <td>${formatarCnpj(p.cnpj)}</td>
+      <td>${p.rede}</td>
+      <td>${p.bd_aquisicao}</td>
+      <td>${p.posto}</td>
+      <td>${p.sub}</td>
+      <td>${p.bd_nursery}</td>
+      <td>${p.observacao_ptarget || ''}</td>
+    </tr>
+  `).join('');
+
+  card.innerHTML = `
+    <div class="card-head">
+      <span>Tabela pronta para copiar</span>
+      <button class="btn-copiar" id="btnCopiar">Copiar tabela</button>
+    </div>
+    <table id="tabela">
+      <tr>
+        <td>CNPJ</td><td>Rede</td><td>BD Aquisição</td><td>Posto</td><td>sub</td><td>BD Destino</td><td>Observação</td>
+      </tr>
+      ${linhasHtml}
+    </table>
+  `;
+  lista.appendChild(card);
+
+  document.getElementById('btnCopiar').addEventListener('click', () => {
+    const tabela = document.getElementById('tabela');
+    const range = document.createRange();
+    range.selectNode(tabela);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
+    mostrarToast('Tabela copiada — cole direto no corpo do e-mail');
+  });
+
+  dados.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-enviado';
+    btn.textContent = `Marcar "${p.posto}" como enviado`;
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Marcando...';
+      const r = await fetch(`${APPS_SCRIPT_URL}?action=marcar_pedido_enviado&id_pedido=${encodeURIComponent(p.id_pedido)}`);
+      const j = await r.json();
+      if (j.status === 'ok') carregar();
+    });
+    lista.appendChild(btn);
+  });
+}
+
+function mostrarToast(texto) {
+  const t = document.getElementById('toast');
+  t.textContent = texto;
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
+function formatarCnpj(c) {
+  const s = String(c).replace(/\D/g,'').padStart(14,'0');
+  return s.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+}
+
+carregar();
+</script>
+</body>
+</html>
