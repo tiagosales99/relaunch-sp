@@ -59,7 +59,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
       <div class="topbar-sub">Defina qual Nursery assume cada posto</div>
     </div>
   </div>
-  <a class="topbar-voltar" id="link-voltar" href="hub_nursery.html">← Menu</a>
+  <a class="topbar-voltar" id="link-voltar" href="hub_coordenacao.html">← Menu</a>
 </div>
 
 <div class="container">
@@ -76,7 +76,7 @@ let quemAtual = '';
 window.onload = function() {
   const params = new URLSearchParams(window.location.search);
   quemAtual = params.get('nome') || '';
-  document.getElementById('link-voltar').href = 'hub_nursery.html' + (quemAtual ? ('?nome=' + encodeURIComponent(quemAtual)) : '');
+  document.getElementById('link-voltar').href = 'hub_coordenacao.html' + (quemAtual ? ('?nome=' + encodeURIComponent(quemAtual)) : '');
   carregar();
   carregarMinhasTarefas();
 };
