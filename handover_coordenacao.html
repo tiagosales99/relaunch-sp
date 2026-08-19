@@ -44,6 +44,12 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .tarefa-fernanda-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
 .btn-concluir-tarefa{width:100%;margin-top:10px;background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:9px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;}
 
+.resolver-row{display:flex;gap:8px;margin-top:10px;}
+.resolver-row select{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:13px;padding:10px 12px;}
+.resolver-row button{background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:0 18px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;cursor:pointer;white-space:nowrap;}
+.resolver-row button:disabled{opacity:.5;cursor:not-allowed;}
+.resolver-erro{font-size:11px;color:var(--vermelho);margin-top:6px;display:none;}
+
 .empty{text-align:center;padding:50px 20px;color:var(--texto-claro);}
 .empty-icon{font-size:30px;margin-bottom:10px;}
 .loading{text-align:center;padding:50px 20px;color:var(--texto-claro);}
@@ -70,6 +76,11 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 <script>
 const SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKWhHlEG9zMBbpg7ADTuU_Ares6xivwmSrMvFnj0689ILmisASnfgZie0botnZ0A/exec';
 const NURSERY_BDS = ['Matheus', 'Everton', 'Erik', 'Mainart'];
+const AQUISICAO_BDS = ['Vera', 'Felipe', 'Andre', 'Sutil', 'Inacio', 'Fred'];
+
+// Texto exato usado no Code.gs pra identificar essa tarefa específica —
+// se o texto da tarefa mudar lá, precisa atualizar aqui também.
+const TEXTO_TAREFA_BD_ENGAJAMENTO = 'Definir BD Engajamento (coluna H) na Funil SP pra esse posto listado';
 
 let quemAtual = '';
 
@@ -101,7 +112,24 @@ function carregarMinhasTarefas() {
 function renderizarMinhasTarefas(lista) {
   const container = document.getElementById('minhas-tarefas');
   if (!lista.length) { container.innerHTML = ''; return; }
-  container.innerHTML = lista.map(t => `
+
+  container.innerHTML = lista.map(t => {
+    const ehBdEngajamento = t.tarefa === TEXTO_TAREFA_BD_ENGAJAMENTO;
+
+    const corpoResolver = ehBdEngajamento ? `
+      <div class="resolver-row">
+        <select id="select-resolver-${t.id_tarefa}">
+          <option value="">Escolher BD de Aquisição</option>
+          ${AQUISICAO_BDS.map(n => `<option value="${n}">${n}</option>`).join('')}
+        </select>
+        <button id="btn-resolver-${t.id_tarefa}" onclick="resolverBdEngajamento('${t.id_tarefa}','${t.cnpj}')">Atribuir</button>
+      </div>
+      <div class="resolver-erro" id="erro-resolver-${t.id_tarefa}"></div>
+    ` : `
+      <button class="btn-concluir-tarefa" onclick="concluirMinhaTarefa('${t.id_tarefa}')">✓ Já resolvi</button>
+    `;
+
+    return `
     <div class="tarefa-fernanda" id="tarefa-${t.id_tarefa}">
       <div class="tarefa-fernanda-top">
         <div class="tarefa-fernanda-titulo">${t.posto || 'Posto não informado'}</div>
@@ -109,8 +137,61 @@ function renderizarMinhasTarefas(lista) {
       </div>
       <div class="tarefa-fernanda-desc">${t.tarefa || ''}</div>
       <div class="tarefa-fernanda-meta">CNPJ: <b>${t.cnpj}</b> · Prazo: ${t.prazo || '-'}</div>
-      <button class="btn-concluir-tarefa" onclick="concluirMinhaTarefa('${t.id_tarefa}')">✓ Já resolvi</button>
-    </div>`).join('');
+      ${corpoResolver}
+    </div>`;
+  }).join('');
+}
+
+// Escreve o BD de Aquisição escolhido direto na coluna H da Funil SP e
+// conclui a tarefa no mesmo clique — sem precisar abrir a planilha.
+function resolverBdEngajamento(idTarefa, cnpj) {
+  const select = document.getElementById('select-resolver-' + idTarefa);
+  const erroDiv = document.getElementById('erro-resolver-' + idTarefa);
+  const btn = document.getElementById('btn-resolver-' + idTarefa);
+  const bdEscolhido = select.value;
+
+  erroDiv.style.display = 'none';
+  if (!bdEscolhido) {
+    erroDiv.textContent = 'Escolhe um BD antes de atribuir.';
+    erroDiv.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Atribuindo...';
+
+  const params = new URLSearchParams({
+    action: 'resolver_bd_engajamento',
+    id_tarefa: idTarefa,
+    cnpj: cnpj,
+    bd_aquisicao: bdEscolhido
+  });
+  const cb = 'cbresolverbd_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-resolverbd');
+    if (el) el.remove();
+    if (!resultado || resultado.status !== 'ok') {
+      erroDiv.textContent = (resultado && resultado.msg) || 'Erro ao atribuir. Tenta de novo.';
+      erroDiv.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Atribuir';
+      return;
+    }
+    const card = document.getElementById('tarefa-' + idTarefa);
+    if (card) card.remove();
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-resolverbd';
+  s.onerror = function() {
+    delete window[cb];
+    erroDiv.textContent = 'Erro de conexão. Tenta de novo.';
+    erroDiv.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Atribuir';
+  };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
+  document.head.appendChild(s);
 }
 
 function concluirMinhaTarefa(id) {
