@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de Atuação , 99Abastece Relaunch SP</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+:root {
+  --amarelo: #FFD600; --preto: #1A1A1A; --cinza-escuro: #232323; --cinza-medio: #2C2C2C;
+  --branco: #FFFFFF; --texto-claro: #9A9A9A; --borda: #3A3A3A; --radius: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);color:var(--branco);min-height:100vh;}
+.topbar{background:var(--amarelo);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.topbar-brand{display:flex;align-items:center;gap:10px;}
+.topbar-logo{width:34px;height:34px;background:var(--preto);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--amarelo);}
+.topbar-title{font-weight:800;font-size:16px;color:var(--preto);line-height:1.1;}
+.topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
+.topbar-voltar{background:var(--preto);color:var(--amarelo);border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+.container{max-width:900px;margin:0 auto;padding:20px 24px 60px;}
+.busca-row{display:flex;gap:8px;margin-bottom:12px;}
+.busca-row input{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:14px;padding:10px 14px;}
+.busca-row button{background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:0 22px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;cursor:pointer;}
+.busca-row button:disabled{opacity:.5;cursor:not-allowed;}
+#mapa-grids{height:480px;border-radius:12px;overflow:hidden;margin-bottom:12px;}
+.legenda{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;font-size:12px;color:var(--texto-claro);}
+.legenda-item{display:flex;align-items:center;gap:6px;}
+.legenda-dot{width:10px;height:10px;border-radius:2px;display:inline-block;}
+.info-box{padding:12px 16px;border-radius:8px;background:var(--cinza-escuro);border:1.5px solid var(--borda);font-size:13px;display:none;}
+.info-box.ok{border-color:#639922;}
+.info-box.erro{border-color:#E24B4A;color:#F09595;}
+.info-box b{color:var(--amarelo);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">99</div>
+    <div>
+      <div class="topbar-title">Mapa de Atuação</div>
+      <div class="topbar-sub">Veja em qual grid cada posto está localizado</div>
+    </div>
+  </div>
+  <a class="topbar-voltar" id="link-voltar" href="hub_bd.html">← Menu</a>
+</div>
+
+<div class="container">
+  <div class="busca-row">
+    <input type="text" id="input-cnpj" placeholder="00.000.000/0001-00" />
+    <button id="btn-buscar">Localizar posto</button>
+  </div>
+
+  <div id="mapa-grids"></div>
+
+  <div class="info-box" id="info-box"></div>
+
+  <div class="legenda">
+    <div class="legenda-item"><span class="legenda-dot" style="background:#378ADD;"></span>Andre</div>
+    <div class="legenda-item"><span class="legenda-dot" style="background:#EF9F27;"></span>Vera</div>
+    <div class="legenda-item"><span class="legenda-dot" style="background:#639922;"></span>Felipe</div>
+    <div class="legenda-item"><span class="legenda-dot" style="background:#444441;"></span>Inacio</div>
+    <div class="legenda-item"><span class="legenda-dot" style="background:#7F77DD;"></span>Sutil</div>
+    <div class="legenda-item"><span class="legenda-dot" style="background:#B4B2A9;"></span>Não prioritário (qualquer BD)</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="grids_relaunch.js"></script>
+<script>
+// PREENCHER: mesma URL do Apps Script já usada nas outras telas
+const APPS_SCRIPT_URL = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
+
+const CORES_BD = {
+  'Andre': '#378ADD', 'Vera': '#EF9F27', 'Felipe': '#639922',
+  'Inacio': '#444441', 'Sutil': '#7F77DD'
+};
+
+window.onload = function() {
+  const params = new URLSearchParams(window.location.search);
+  const nome = params.get('nome') || '';
+  document.getElementById('link-voltar').href = 'hub_bd.html' + (nome ? ('?nome=' + encodeURIComponent(nome)) : '');
+};
+
+function estiloGrid(feature) {
+  const bd = feature.properties.bd;
+  const prio = feature.properties.prioridade;
+  const cor = CORES_BD[bd] || '#B4B2A9';
+  let opacidade = 0.18;
+  if (prio === 'High Priority') opacidade = 0.55;
+  else if (prio === 'Priority') opacidade = 0.32;
+  else opacidade = 0.12;
+  return { color: cor, weight: 1, fillColor: cor, fillOpacity: opacidade };
+}
+
+const mapa = L.map('mapa-grids', { renderer: L.canvas() }).setView([-23.55, -46.63], 10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '', maxZoom: 18 }).addTo(mapa);
+
+const camadaGrids = L.geoJSON(GRIDS_RELAUNCH_SP, {
+  style: estiloGrid,
+  onEachFeature: function(feature, layer) {
+    const p = feature.properties;
+    layer.bindTooltip(p.bd + ' - ' + p.prioridade + ' (sub ' + parseInt(p.sub) + ')', { sticky: true });
+  }
+}).addTo(mapa);
+
+// Ray casting simples pra achar em qual polígono (grid) um ponto cai —
+// sem precisar de biblioteca externa de geo.
+function pontoDentroPoligono(lat, lng, coords) {
+  let dentro = false;
+  for (let i = 0, j = coords.length - 1; i < coords.length; j = i++) {
+    const xi = coords[i][0], yi = coords[i][1];
+    const xj = coords[j][0], yj = coords[j][1];
+    const intersecta = ((yi > lat) !== (yj > lat)) &&
+      (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+    if (intersecta) dentro = !dentro;
+  }
+  return dentro;
+}
+
+function acharGridDoPosto(lat, lng) {
+  for (const feature of GRIDS_RELAUNCH_SP.features) {
+    const anel = feature.geometry.coordinates[0];
+    if (pontoDentroPoligono(lat, lng, anel)) return feature.properties;
+  }
+  return null;
+}
+
+let pinoAtual = null;
+
+document.getElementById('btn-buscar').addEventListener('click', buscarCnpj);
+document.getElementById('input-cnpj').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') buscarCnpj();
+});
+
+function buscarCnpj() {
+  const cnpj = document.getElementById('input-cnpj').value.trim();
+  const info = document.getElementById('info-box');
+  const btn = document.getElementById('btn-buscar');
+
+  info.className = 'info-box';
+  if (!cnpj) {
+    info.className = 'info-box erro';
+    info.style.display = 'block';
+    info.textContent = 'Digite um CNPJ antes de buscar.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Buscando...';
+
+  const cb = 'cbmapa_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-mapa');
+    if (el) el.remove();
+    btn.disabled = false;
+    btn.textContent = 'Localizar posto';
+
+    if (!data || data.status !== 'ok') {
+      info.className = 'info-box erro';
+      info.style.display = 'block';
+      info.textContent = (data && data.msg) || 'Não consegui localizar esse CNPJ.';
+      return;
+    }
+
+    if (pinoAtual) mapa.removeLayer(pinoAtual);
+    pinoAtual = L.marker([data.lat, data.long]).addTo(mapa);
+    mapa.setView([data.lat, data.long], 14);
+
+    const grid = acharGridDoPosto(data.lat, data.long);
+    info.className = 'info-box ok';
+    info.style.display = 'block';
+    if (grid) {
+      info.innerHTML = 'Posto localizado no grid do BD <b>' + grid.bd + '</b> (' + grid.prioridade + ', sub ' + parseInt(grid.sub) + ').';
+    } else {
+      info.innerHTML = 'Posto localizado, mas fora de qualquer grid mapeado.';
+    }
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-mapa';
+  s.onerror = function() {
+    delete window[cb];
+    btn.disabled = false;
+    btn.textContent = 'Localizar posto';
+    info.className = 'info-box erro';
+    info.style.display = 'block';
+    info.textContent = 'Erro de conexão. Tenta de novo.';
+  };
+  s.src = APPS_SCRIPT_URL + '?tipo=lat_long_cnpj&cnpj=' + encodeURIComponent(cnpj) + '&callback=' + cb;
+  document.head.appendChild(s);
+}
+</script>
+</body>
+</html>
