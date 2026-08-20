@@ -77,6 +77,19 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .empty{text-align:center;padding:30px 20px;color:var(--texto-claro);font-size:12px;}
 .loading{text-align:center;padding:30px 20px;color:var(--texto-claro);}
 
+.placar-item{background:var(--cinza-medio);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.placar-item.voce{border:2px solid var(--roxo);}
+.placar-pos{font-size:12px;font-weight:800;color:var(--texto-claro);width:24px;text-align:center;}
+.placar-pos.medalha{font-size:16px;}
+.placar-nome{font-size:12px;font-weight:800;color:var(--branco);}
+.placar-badge{font-size:9px;font-weight:800;padding:2px 6px;border-radius:8px;margin-left:4px;}
+.placar-badge.tc{background:var(--verde);color:#062E14;}
+.placar-badge.listagem{background:var(--azul);color:#FFFFFF;}
+.placar-badge.total{background:var(--roxo);color:#FFFFFF;}
+.placar-barra-fundo{height:5px;background:#1A1A1A;border-radius:3px;overflow:hidden;margin-top:5px;}
+.placar-barra-preench{height:100%;border-radius:3px;}
+.placar-pct{font-size:13px;font-weight:800;}
+
 @media(max-width:900px){
   .kpi-grid{grid-template-columns:repeat(2,1fr);}
   .grid2,.grid2-inv{grid-template-columns:1fr;}
@@ -148,6 +161,12 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-titulo">Placar do Mês — T&C, Listagem e Total</div>
+    <div class="card-sub">Ranking geral entre todos, ordenado por %</div>
+    <div id="placar-geral"><div class="loading">Carregando...</div></div>
+  </div>
+
 </div>
 
 <script>
@@ -159,7 +178,60 @@ let chartHandovers = null, chartTc = null;
 window.onload = function() {
   carregar();
   carregarContadorHandovers();
+  carregarPlacar();
 };
+
+const MEDALHAS = ['🥇', '🥈', '🥉'];
+
+function carregarPlacar() {
+  const cb = 'cbplacardash_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-placardash');
+    if (el) el.remove();
+    renderizarPlacar(data || {});
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-placardash';
+  s.onerror = function() { delete window[cb]; };
+  s.src = SCRIPT_URL + '?tipo=placar_geral&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
+
+function corPorPercentualPlacar(pct) {
+  if (pct >= 60) return '#00C853';
+  if (pct >= 30) return '#FFD600';
+  return '#FF5252';
+}
+function badgeClassePlacar(tipo) {
+  if (tipo === 'T&C') return 'tc';
+  if (tipo === 'Listagem') return 'listagem';
+  return 'total';
+}
+
+function renderizarPlacar(d) {
+  const container = document.getElementById('placar-geral');
+  if (!d || d.status !== 'ok' || !d.placar || !d.placar.length) {
+    container.innerHTML = '<div class="empty">Sem dados de placar esse mês.</div>';
+    return;
+  }
+  container.innerHTML = d.placar.map((item, i) => {
+    const cor = corPorPercentualPlacar(item.percentual);
+    const ehVoce = item.nome === 'Tiago';
+    const posicao = i < 3
+      ? '<div class="placar-pos medalha">' + MEDALHAS[i] + '</div>'
+      : '<div class="placar-pos">' + (i + 1) + 'º</div>';
+    return `
+    <div class="placar-item${ehVoce ? ' voce' : ''}">
+      ${posicao}
+      <div style="flex:1;">
+        <div class="placar-nome">${item.nome}<span class="placar-badge ${badgeClassePlacar(item.tipo)}">${item.tipo}</span></div>
+        <div class="placar-barra-fundo"><div class="placar-barra-preench" style="width:${item.percentual}%;background:${cor};"></div></div>
+      </div>
+      <div class="placar-pct" style="color:${cor};">${item.percentual}%</div>
+    </div>`;
+  }).join('');
+}
 
 function carregarContadorHandovers() {
   const cb = 'cbcontador_' + Date.now();
