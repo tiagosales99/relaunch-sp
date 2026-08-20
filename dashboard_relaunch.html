@@ -19,7 +19,15 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .topbar-logo{width:34px;height:34px;background:var(--preto);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--amarelo);}
 .topbar-title{font-weight:800;font-size:16px;color:var(--preto);line-height:1.1;}
 .topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
+.topbar-acoes{display:flex;align-items:center;gap:10px;}
 .topbar-voltar{background:var(--preto);color:var(--amarelo);border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+.topbar-handover{position:relative;background:var(--preto);color:#9A9A9A;border:2px solid var(--preto);border-radius:8px;padding:6px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;display:inline-block;}
+.topbar-handover.tem-pendencia{background:var(--amarelo);color:var(--preto);border:2px solid var(--preto);font-weight:800;box-shadow:0 4px 0 #8A6D00;animation:pulsaHandover 1.6s infinite;}
+.topbar-handover .badge-handover{position:absolute;top:-9px;right:-9px;background:var(--preto);color:var(--amarelo);font-size:10px;font-weight:800;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:2px solid var(--amarelo);}
+@keyframes pulsaHandover{
+  0%,100%{transform:translateY(0);box-shadow:0 4px 0 #8A6D00;}
+  50%{transform:translateY(1px);box-shadow:0 3px 0 #8A6D00;}
+}
 
 .container{max-width:1200px;margin:0 auto;padding:20px 24px 60px;}
 
@@ -85,7 +93,10 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
       <div class="topbar-sub">Visão em tempo real do time</div>
     </div>
   </div>
-  <a class="topbar-voltar" href="login.html">Sair</a>
+  <div class="topbar-acoes">
+    <a class="topbar-handover" id="btn-meus-handovers" href="handover_aquisicao.html?nome=Tiago">Meus Handovers</a>
+    <a class="topbar-voltar" href="login.html">Sair</a>
+  </div>
 </div>
 
 <div class="container">
@@ -147,7 +158,31 @@ let chartHandovers = null, chartTc = null;
 
 window.onload = function() {
   carregar();
+  carregarContadorHandovers();
 };
+
+function carregarContadorHandovers() {
+  const cb = 'cbcontador_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-contador');
+    if (el) el.remove();
+    const btn = document.getElementById('btn-meus-handovers');
+    const total = (data && data.status === 'ok') ? data.total : 0;
+    if (total > 0) {
+      btn.classList.add('tem-pendencia');
+      btn.innerHTML = 'Meus Handovers<span class="badge-handover">' + total + '</span>';
+    } else {
+      btn.classList.remove('tem-pendencia');
+      btn.textContent = 'Meus Handovers';
+    }
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-contador';
+  s.onerror = function() { delete window[cb]; };
+  s.src = SCRIPT_URL + '?tipo=contador_handovers_tiago&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
 
 function carregar() {
   const cb = 'cbdash_' + Date.now();
