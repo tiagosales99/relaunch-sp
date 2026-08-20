@@ -111,6 +111,12 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
       <div class="menu-card-sub">Termos assinados, data e sócio responsável</div>
     </a>
 
+    <a class="menu-card" style="border-left:6px solid var(--laranja);" id="link-placar" href="#">
+      <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M17 5V3H7v2M7 5H3v2a4 4 0 0 0 4 4M17 5h4v2a4 4 0 0 1-4 4M7 5v4a5 5 0 0 0 10 0V5"/></svg></div>
+      <div class="menu-card-titulo">Placar do Mês</div>
+      <div class="menu-card-sub">Ranking geral entre os BDs — T&C, Listagem e Total</div>
+    </a>
+
     <!-- AZUL = consulta -->
     <a class="menu-card" style="border-left:6px solid var(--azul);" id="link-assinaturas" href="#">
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
@@ -169,6 +175,7 @@ window.onload = function() {
   document.getElementById('link-pedido-listagem').href = 'pedido_listagem.html' + sufixo;
   document.getElementById('link-mapa-atuacao').href = 'mapa_atuacao.html' + sufixo;
   document.getElementById('link-ptarget').href = 'calculadora_ptarget.html' + sufixo;
+  document.getElementById('link-placar').href = 'placar.html' + sufixo;
 
   montarSaudacao(nome);
   carregarResumoDia(nome);
