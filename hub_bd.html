@@ -118,6 +118,18 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
       <div class="menu-card-sub">Boot Copiloto — quem assinou, quando, e onde travou no funil</div>
     </a>
 
+    <a class="menu-card" style="border-left:6px solid var(--azul);" id="link-mapa-atuacao" href="#">
+      <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6v16l7-4 8 4 7-4V2l-7 4-8-4-7 4z"/><path d="M8 2v16M16 6v16"/></svg></div>
+      <div class="menu-card-titulo">Mapa de Atuação</div>
+      <div class="menu-card-sub">Veja em qual grid cada posto está localizado</div>
+    </a>
+
+    <a class="menu-card" style="border-left:6px solid var(--azul);" id="link-ptarget" href="#">
+      <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="9" y2="10"/><line x1="12" y1="10" x2="13" y2="10"/><line x1="16" y1="10" x2="17" y2="10"/><line x1="8" y1="14" x2="9" y2="14"/><line x1="12" y1="14" x2="13" y2="14"/><line x1="16" y1="14" x2="17" y2="14"/><line x1="8" y1="18" x2="9" y2="18"/><line x1="12" y1="18" x2="13" y2="18"/></svg></div>
+      <div class="menu-card-titulo">Calculadora de Ptarget</div>
+      <div class="menu-card-sub">Preço alvo por combustível, da sub-região do posto</div>
+    </a>
+
     <!-- ROXO = comunicação -->
     <a class="menu-card" style="border-left:6px solid var(--roxo);" id="link-reunioes" href="#">
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
@@ -155,6 +167,8 @@ window.onload = function() {
   document.getElementById('link-termos').href = 'meus_termos.html' + sufixo;
   document.getElementById('link-assinaturas').href = 'boot_copiloto.html' + sufixo;
   document.getElementById('link-pedido-listagem').href = 'pedido_listagem.html' + sufixo;
+  document.getElementById('link-mapa-atuacao').href = 'mapa_atuacao.html' + sufixo;
+  document.getElementById('link-ptarget').href = 'calculadora_ptarget.html' + sufixo;
 
   montarSaudacao(nome);
   carregarResumoDia(nome);
