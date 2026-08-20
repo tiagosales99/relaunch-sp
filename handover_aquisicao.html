@@ -74,7 +74,14 @@ let handoversAtuais = [];
 window.onload = function() {
   const params = new URLSearchParams(window.location.search);
   quemAtual = params.get('nome') || '';
-  document.getElementById('link-voltar').href = 'hub_bd.html' + (quemAtual ? ('?nome=' + encodeURIComponent(quemAtual)) : '');
+
+  // O Tiago acessa essa mesma tela quando cai pra ele (Situação 3), mas
+  // o "← Menu" dele tem que voltar pro dashboard gerencial, não pro
+  // hub_bd (que é o menu dos BDs de Aquisição comuns).
+  const ehTiago = /^tiago/i.test(quemAtual.trim());
+  const paginaVoltar = ehTiago ? 'dashboard_relaunch.html' : 'hub_bd.html';
+  document.getElementById('link-voltar').href = paginaVoltar + (quemAtual ? ('?nome=' + encodeURIComponent(quemAtual)) : '');
+
   if (!quemAtual) {
     document.getElementById('lista').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Acesse essa página pelo menu, faltou identificar quem você é.</div>';
     return;
@@ -136,6 +143,8 @@ function renderizar() {
         <div class="card-status">${h.status}</div>
       </div>
       <div class="card-meta">CNPJ: <b>${h.cnpj}</b></div>
+      ${h.rede ? `<div class="card-meta">Rede: <b>${h.rede}</b></div>` : ''}
+      ${h.sub ? `<div class="card-meta">Sub: <b>${h.sub}</b></div>` : ''}
       <div class="card-meta">Nursery responsável: <b>${h.bd_nursery || '-'}</b></div>
       ${acoes}
     </div>`;
