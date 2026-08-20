@@ -54,6 +54,12 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
       <div class="menu-card-titulo" id="titulo-handover">Handover</div>
       <div class="menu-card-sub" id="sub-handover">Postos em transição de gestão</div>
     </a>
+
+    <a class="menu-card" id="link-pedido-listagem" href="#">
+      <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><path d="M16 2l2 2-2 2"/></svg></div>
+      <div class="menu-card-titulo">Pedido de Listagem</div>
+      <div class="menu-card-sub">Confirmar comprovante bancário e Ptarget antes da subida</div>
+    </a>
   </div>
 </div>
 <script>
@@ -62,6 +68,7 @@ window.onload = function() {
   const nome = params.get('nome') || '';
   const sufixo = nome ? ('?nome=' + encodeURIComponent(nome)) : '';
   document.getElementById('link-handover').href = 'handover_nursery.html' + sufixo;
+  document.getElementById('link-pedido-listagem').href = 'pedido_listagem_nursery.html' + sufixo;
   montarSaudacao(nome);
 };
 
