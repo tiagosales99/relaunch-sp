@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Ptarget , 99Abastece Relaunch SP</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --amarelo: #FFD600; --preto: #1A1A1A; --cinza-escuro: #232323; --cinza-medio: #2C2C2C;
+  --branco: #FFFFFF; --texto-claro: #9A9A9A; --borda: #3A3A3A; --vermelho: #FF5252; --radius: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);color:var(--branco);min-height:100vh;}
+.topbar{background:var(--amarelo);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.topbar-brand{display:flex;align-items:center;gap:10px;}
+.topbar-logo{width:34px;height:34px;background:var(--preto);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--amarelo);}
+.topbar-title{font-weight:800;font-size:16px;color:var(--preto);line-height:1.1;}
+.topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
+.topbar-voltar{background:var(--preto);color:var(--amarelo);border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+.container{max-width:520px;margin:0 auto;padding:24px;}
+.busca-row{display:flex;gap:8px;margin-bottom:16px;}
+.busca-row input{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:14px;padding:10px 14px;}
+.busca-row button{background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:0 22px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;cursor:pointer;}
+.busca-row button:disabled{opacity:.5;cursor:not-allowed;}
+.card{background:var(--cinza-escuro);border:1px solid var(--borda);border-radius:12px;padding:16px 18px;display:none;}
+.card-titulo{font-size:14px;font-weight:800;color:var(--branco);margin-bottom:4px;}
+.card-sub{font-size:11px;color:var(--texto-claro);margin-bottom:14px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{padding:8px 0;color:var(--texto-claro);font-weight:600;text-align:left;border-bottom:1px solid var(--borda);}
+th:last-child{text-align:right;}
+td{padding:8px 0;color:var(--branco);border-bottom:1px solid var(--cinza-medio);}
+td:last-child{color:var(--amarelo);font-weight:800;text-align:right;}
+.aviso{font-size:11px;color:#6B6963;margin-top:10px;}
+.msg-box{padding:12px 16px;border-radius:8px;font-size:13px;display:none;}
+.msg-box.erro{background:#2A0A0A;border:1px solid var(--vermelho);color:#F09595;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-logo">99</div>
+    <div>
+      <div class="topbar-title">Calculadora de Ptarget</div>
+      <div class="topbar-sub">Preço alvo por combustível, da sub-região do posto</div>
+    </div>
+  </div>
+  <a class="topbar-voltar" id="link-voltar" href="hub_bd.html">← Menu</a>
+</div>
+
+<div class="container">
+  <div class="busca-row">
+    <input type="text" id="input-cnpj" placeholder="00.000.000/0001-00" />
+    <button id="btn-buscar">Buscar</button>
+  </div>
+
+  <div class="msg-box" id="msg-box"></div>
+
+  <div class="card" id="card-resultado">
+    <div class="card-titulo" id="card-posto"></div>
+    <div class="card-sub" id="card-info"></div>
+    <table>
+      <tr><th>Combustível</th><th>Ptarget</th></tr>
+      <tbody id="tbody-combustiveis"></tbody>
+    </table>
+    <div class="aviso">Se o posto nunca teve visita registrada, não é possível saber a bandeira.</div>
+  </div>
+</div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKWhHlEG9zMBbpg7ADTuU_Ares6xivwmSrMvFnj0689ILmisASnfgZie0botnZ0A/exec';
+
+window.onload = function() {
+  const params = new URLSearchParams(window.location.search);
+  const nome = params.get('nome') || '';
+  document.getElementById('link-voltar').href = 'hub_bd.html' + (nome ? ('?nome=' + encodeURIComponent(nome)) : '');
+};
+
+document.getElementById('btn-buscar').addEventListener('click', buscarPtarget);
+document.getElementById('input-cnpj').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') buscarPtarget();
+});
+
+function buscarPtarget() {
+  const cnpj = document.getElementById('input-cnpj').value.trim();
+  const msgBox = document.getElementById('msg-box');
+  const card = document.getElementById('card-resultado');
+  const btn = document.getElementById('btn-buscar');
+
+  msgBox.style.display = 'none';
+  card.style.display = 'none';
+
+  if (!cnpj) {
+    msgBox.className = 'msg-box erro';
+    msgBox.style.display = 'block';
+    msgBox.textContent = 'Digite um CNPJ antes de buscar.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Buscando...';
+
+  const cb = 'cbptarget_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-ptarget');
+    if (el) el.remove();
+    btn.disabled = false;
+    btn.textContent = 'Buscar';
+
+    if (!data || data.status !== 'ok') {
+      msgBox.className = 'msg-box erro';
+      msgBox.style.display = 'block';
+      msgBox.textContent = (data && data.msg) || 'Não consegui buscar o Ptarget desse CNPJ.';
+      return;
+    }
+
+    document.getElementById('card-posto').textContent = data.posto || 'Posto não identificado';
+    document.getElementById('card-info').innerHTML = 'Sub ' + data.sub + ' &middot; <b>' + data.bandeira + '</b>';
+    document.getElementById('tbody-combustiveis').innerHTML = data.combustiveis.map(c =>
+      '<tr><td>' + c.combustivel + '</td><td>R$ ' + Number(c.ptarget).toFixed(2).replace('.', ',') + '</td></tr>'
+    ).join('');
+    card.style.display = 'block';
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-ptarget';
+  s.onerror = function() {
+    delete window[cb];
+    btn.disabled = false;
+    btn.textContent = 'Buscar';
+    msgBox.className = 'msg-box erro';
+    msgBox.style.display = 'block';
+    msgBox.textContent = 'Erro de conexão. Tenta de novo.';
+  };
+  s.src = APPS_SCRIPT_URL + '?tipo=ptarget_por_cnpj&cnpj=' + encodeURIComponent(cnpj) + '&callback=' + cb;
+  document.head.appendChild(s);
+}
+</script>
+</body>
+</html>
