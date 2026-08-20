@@ -22,6 +22,10 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 
 .container{max-width:640px;margin:0 auto;padding:60px 24px 60px;}
 
+.modo-toggle{display:flex;gap:8px;margin-bottom:28px;}
+.modo-btn{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;padding:9px 12px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--texto-claro);cursor:pointer;text-align:center;}
+.modo-btn.ativo{background:var(--amarelo);color:var(--preto);border-color:var(--amarelo);font-weight:800;}
+
 .busca-titulo{text-align:center;font-size:13px;color:var(--texto-claro);margin-bottom:16px;}
 .busca-input{width:100%;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:10px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:16px;padding:16px;outline:none;text-align:center;margin-bottom:16px;}
 .busca-input:focus{border-color:var(--amarelo);}
@@ -65,6 +69,11 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .historico-item b{color:var(--branco);}
 .historico-tag{font-size:9px;font-weight:800;padding:2px 8px;border-radius:8px;background:var(--cinza-medio);color:var(--texto-claro);margin-left:6px;}
 
+.regiao-box{background:#211A33;border:1.5px solid #5C2FB8;border-radius:var(--radius);padding:20px 24px;}
+.regiao-contador{text-align:center;font-size:11px;color:var(--texto-claro);margin-bottom:14px;}
+.regiao-label{font-size:10px;color:#B8A8E0;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;}
+.regiao-texto{font-size:13px;color:var(--branco);line-height:1.7;white-space:pre-wrap;}
+
 .loading{text-align:center;padding:30px 20px;color:var(--texto-claro);}
 </style>
 </head>
@@ -83,11 +92,24 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 
 <div class="container">
 
-  <div class="busca-titulo">Digite o CNPJ do posto que quer consultar</div>
-  <input type="text" id="busca-cnpj" class="busca-input" inputmode="numeric" placeholder="12345678000100">
-  <button class="busca-btn" id="btn-buscar" onclick="buscarCnpj()">🔍 Consultar CNPJ</button>
+  <div class="modo-toggle">
+    <div class="modo-btn ativo" id="btn-modo-cnpj" onclick="trocarModo('cnpj')">Por CNPJ</div>
+    <div class="modo-btn" id="btn-modo-regiao" onclick="trocarModo('regiao')">Por região/rede</div>
+  </div>
 
-  <div id="resultado"></div>
+  <div id="modo-cnpj-container">
+    <div class="busca-titulo">Digite o CNPJ do posto que quer consultar</div>
+    <input type="text" id="busca-cnpj" class="busca-input" inputmode="numeric" placeholder="12345678000100">
+    <button class="busca-btn" id="btn-buscar" onclick="buscarCnpj()">🔍 Consultar CNPJ</button>
+    <div id="resultado"></div>
+  </div>
+
+  <div id="modo-regiao-container" style="display:none;">
+    <div class="busca-titulo">Digite a sub-região que quer consultar (ex: 7)</div>
+    <input type="text" id="busca-sub" class="busca-input" inputmode="numeric" placeholder="7">
+    <button class="busca-btn" id="btn-buscar-regiao" onclick="buscarRegiao()">🔍 Analisar padrão de recusa</button>
+    <div id="resultado-regiao"></div>
+  </div>
 
 </div>
 
@@ -105,7 +127,75 @@ window.onload = function() {
   document.getElementById('busca-cnpj').addEventListener('keydown', function(ev) {
     if (ev.key === 'Enter') buscarCnpj();
   });
+  document.getElementById('busca-sub').addEventListener('keydown', function(ev) {
+    if (ev.key === 'Enter') buscarRegiao();
+  });
 };
+
+function trocarModo(modo) {
+  const btnCnpj = document.getElementById('btn-modo-cnpj');
+  const btnRegiao = document.getElementById('btn-modo-regiao');
+  const containerCnpj = document.getElementById('modo-cnpj-container');
+  const containerRegiao = document.getElementById('modo-regiao-container');
+
+  if (modo === 'cnpj') {
+    btnCnpj.classList.add('ativo');
+    btnRegiao.classList.remove('ativo');
+    containerCnpj.style.display = 'block';
+    containerRegiao.style.display = 'none';
+  } else {
+    btnCnpj.classList.remove('ativo');
+    btnRegiao.classList.add('ativo');
+    containerCnpj.style.display = 'none';
+    containerRegiao.style.display = 'block';
+  }
+}
+
+function buscarRegiao() {
+  const sub = document.getElementById('busca-sub').value.trim();
+  const resultBox = document.getElementById('resultado-regiao');
+  if (!sub) { resultBox.innerHTML = '<div class="busca-vazio">Digite uma sub-região antes de buscar.</div>'; return; }
+
+  const btn = document.getElementById('btn-buscar-regiao');
+  btn.disabled = true;
+  btn.textContent = 'Analisando...';
+  resultBox.innerHTML = '<div class="loading">Cruzando visitas dos últimos 30 dias...</div>';
+
+  const params = new URLSearchParams({ action: 'padrao_regiao', sub: sub });
+  const cb = 'cbregiao_' + Date.now();
+  window[cb] = function(resultado) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-regiao');
+    if (el) el.remove();
+    btn.disabled = false;
+    btn.textContent = '🔍 Analisar padrão de recusa';
+    renderizarRegiao(resultado);
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-regiao';
+  s.onerror = function() {
+    delete window[cb];
+    btn.disabled = false;
+    btn.textContent = '🔍 Analisar padrão de recusa';
+    resultBox.innerHTML = '<div class="busca-vazio">Erro ao buscar. Tenta de novo.</div>';
+  };
+  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
+
+function renderizarRegiao(resultado) {
+  const resultBox = document.getElementById('resultado-regiao');
+  if (!resultado || resultado.status !== 'ok') {
+    resultBox.innerHTML = '<div class="busca-vazio">' + (resultado && resultado.msg || 'Erro ao buscar.') + '</div>';
+    return;
+  }
+  resultBox.innerHTML = `
+    <div class="regiao-contador">${resultado.total_recusas} recusa(s) encontrada(s) na sub-região ${resultado.sub}, últimos 30 dias</div>
+    <div class="regiao-box">
+      <div class="regiao-label">Padrão identificado</div>
+      <div class="regiao-texto">${resultado.padrao}</div>
+    </div>`;
+}
 
 function classeEtapa(etapa) {
   const s = (etapa || '').toLowerCase();
