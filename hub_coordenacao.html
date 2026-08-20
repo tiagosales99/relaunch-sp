@@ -19,19 +19,26 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .topbar-title{font-weight:800;font-size:16px;color:var(--preto);line-height:1.1;}
 .topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
 .topbar-voltar{background:var(--preto);color:var(--amarelo);border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
-
 .container{max-width:900px;margin:0 auto;padding:40px 24px 60px;}
 
+.saudacao-bloco{margin-bottom:20px;}
+.saudacao-titulo{font-size:15px;font-weight:800;color:var(--branco);}
+.saudacao-data{font-size:11px;color:var(--texto-claro);margin-top:2px;}
+
 .menu-cards{display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px;}
-.menu-card{background:var(--cinza-escuro);border:2px solid var(--borda);border-radius:14px;padding:24px;cursor:pointer;transition:border-color .15s;text-decoration:none;color:var(--branco);display:block;border-left:6px solid var(--vermelho);}
+.menu-card{background:var(--cinza-escuro);border:2px solid var(--borda);border-radius:14px;padding:24px;cursor:pointer;transition:border-color .15s;text-decoration:none;color:var(--branco);display:block;position:relative;border-left:6px solid var(--vermelho);}
 .menu-card:hover{border-color:var(--amarelo);}
 .menu-card-icone{margin-bottom:12px;color:var(--amarelo);}
 .menu-card-titulo{font-weight:800;font-size:16px;margin-bottom:4px;}
 .menu-card-sub{font-size:12px;color:var(--texto-claro);}
+.badge-pendencia{position:absolute;top:-8px;right:-8px;background:var(--amarelo);color:var(--preto);font-size:11px;font-weight:800;border-radius:50%;width:22px;height:22px;display:none;align-items:center;justify-content:center;border:2px solid var(--preto);animation:pulsaCard 1.6s infinite;}
+@keyframes pulsaCard{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,214,0,.55);}
+  50%{box-shadow:0 0 0 6px rgba(255,214,0,0);}
+}
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <div class="topbar-brand">
     <div class="topbar-logo">99</div>
@@ -42,33 +49,71 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
   </div>
   <a class="topbar-voltar" href="login.html">Sair</a>
 </div>
-
 <div class="container">
-  <div class="menu-cards">
 
+  <div class="saudacao-bloco">
+    <div class="saudacao-titulo" id="saudacao-titulo">Olá 👋</div>
+    <div class="saudacao-data" id="saudacao-data"></div>
+  </div>
+
+  <div class="menu-cards">
     <a class="menu-card" id="link-handover" href="#">
+      <div class="badge-pendencia" id="badge-handover">0</div>
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
       <div class="menu-card-titulo">Atribuir Handovers</div>
       <div class="menu-card-sub">Postos listados aguardando definição do Nursery responsável</div>
     </a>
-
     <a class="menu-card" style="border-left:6px solid var(--azul);" id="link-dashboard" href="#">
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></svg></div>
       <div class="menu-card-titulo">Visão Geral</div>
       <div class="menu-card-sub">Funil, atrasados e evolução do Handover</div>
     </a>
-
   </div>
 </div>
-
 <script>
+const SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKWhHlEG9zMBbpg7ADTuU_Ares6xivwmSrMvFnj0689ILmisASnfgZie0botnZ0A/exec';
+
 window.onload = function() {
   const params = new URLSearchParams(window.location.search);
   const nome = params.get('nome') || '';
   const sufixo = nome ? ('?nome=' + encodeURIComponent(nome)) : '';
   document.getElementById('link-handover').href = 'handover_coordenacao.html' + sufixo;
   document.getElementById('link-dashboard').href = 'dashboard_handover.html' + sufixo;
+
+  montarSaudacao(nome);
+  carregarContadorPendencias();
 };
+
+function montarSaudacao(nome) {
+  const hora = new Date().getHours();
+  const periodo = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+  const primeiroNome = nome ? nome.split(' ')[0] : '';
+  document.getElementById('saudacao-titulo').textContent = periodo + (primeiroNome ? ', ' + primeiroNome : '') + ' 👋';
+
+  const hoje = new Date();
+  const dataFormatada = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('saudacao-data').textContent = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1);
+}
+
+function carregarContadorPendencias() {
+  const cb = 'cbcontfer_' + Date.now();
+  window[cb] = function(data) {
+    delete window[cb];
+    const el = document.getElementById('jsonp-contfer');
+    if (el) el.remove();
+    const total = (data && data.status === 'ok') ? data.total : 0;
+    const badge = document.getElementById('badge-handover');
+    if (total > 0) {
+      badge.textContent = total;
+      badge.style.display = 'flex';
+    }
+  };
+  const s = document.createElement('script');
+  s.id = 'jsonp-contfer';
+  s.onerror = function() { delete window[cb]; };
+  s.src = SCRIPT_URL + '?tipo=contador_pendencias_fernanda&callback=' + cb + '&t=' + Date.now();
+  document.head.appendChild(s);
+}
 </script>
 </body>
 </html>
