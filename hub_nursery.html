@@ -19,11 +19,12 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .topbar-title{font-weight:800;font-size:16px;color:var(--preto);line-height:1.1;}
 .topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
 .topbar-voltar{background:var(--preto);color:var(--amarelo);border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
-
 .container{max-width:900px;margin:0 auto;padding:40px 24px 60px;}
-
+.saudacao-bloco{margin-bottom:20px;}
+.saudacao-titulo{font-size:15px;font-weight:800;color:var(--branco);}
+.saudacao-data{font-size:11px;color:var(--texto-claro);margin-top:2px;}
 .menu-cards{display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:16px;}
-.menu-card{background:var(--cinza-escuro);border:2px solid var(--borda);border-radius:14px;padding:24px;cursor:pointer;transition:border-color .15s;text-decoration:none;color:var(--branco);display:block;border-left:6px solid var(--amarelo);}
+.menu-card{background:var(--cinza-escuro);border:2px solid var(--borda);border-radius:14px;padding:24px;cursor:pointer;transition:border-color .15s;text-decoration:none;color:var(--branco);display:block;border-left:6px solid var(--vermelho);}
 .menu-card:hover{border-color:var(--amarelo);}
 .menu-card-icone{margin-bottom:12px;color:var(--amarelo);}
 .menu-card-titulo{font-weight:800;font-size:16px;margin-bottom:4px;}
@@ -31,7 +32,6 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <div class="topbar-brand">
     <div class="topbar-logo">99</div>
@@ -42,26 +42,39 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
   </div>
   <a class="topbar-voltar" href="login.html">Sair</a>
 </div>
-
 <div class="container">
+  <div class="saudacao-bloco">
+    <div class="saudacao-titulo" id="saudacao-titulo">Olá 👋</div>
+    <div class="saudacao-data" id="saudacao-data"></div>
+  </div>
   <div class="menu-cards">
-
+    <!-- VERMELHO = pendência -->
     <a class="menu-card" id="link-handover" href="#">
       <div class="menu-card-icone"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div>
       <div class="menu-card-titulo" id="titulo-handover">Handover</div>
       <div class="menu-card-sub" id="sub-handover">Postos em transição de gestão</div>
     </a>
-
   </div>
 </div>
-
 <script>
 window.onload = function() {
   const params = new URLSearchParams(window.location.search);
   const nome = params.get('nome') || '';
   const sufixo = nome ? ('?nome=' + encodeURIComponent(nome)) : '';
   document.getElementById('link-handover').href = 'handover_nursery.html' + sufixo;
+  montarSaudacao(nome);
 };
+
+function montarSaudacao(nome) {
+  const hora = new Date().getHours();
+  const periodo = hora < 12 ? 'Bom dia' : hora < 18 ? 'Boa tarde' : 'Boa noite';
+  const primeiroNome = nome ? nome.split(' ')[0] : '';
+  document.getElementById('saudacao-titulo').textContent = periodo + (primeiroNome ? ', ' + primeiroNome : '') + ' 👋';
+
+  const hoje = new Date();
+  const dataFormatada = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('saudacao-data').textContent = dataFormatada.charAt(0).toUpperCase() + dataFormatada.slice(1);
+}
 </script>
 </body>
 </html>
