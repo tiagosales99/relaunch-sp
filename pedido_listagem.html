@@ -5,10 +5,14 @@
 <title>Pedido de Listagem</title>
 <style>
   * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-  body { background:#1A1A1A; margin:0; padding:20px; }
-  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
-  .topbar h1 { color:#FFD600; font-size:17px; font-weight:500; margin:0; }
-  .topbar a { color:#B4B2A9; font-size:12px; text-decoration:none; }
+  body { background:#1A1A1A; margin:0; padding:0 0 20px; color:#FFFFFF; }
+  .topbar{background:#FFD600;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+  .topbar-brand{display:flex;align-items:center;gap:10px;}
+  .topbar-logo{width:34px;height:34px;background:#1A1A1A;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#FFD600;}
+  .topbar-title{font-weight:800;font-size:16px;color:#1A1A1A;line-height:1.1;}
+  .topbar-sub{font-size:11px;font-weight:600;color:rgba(0,0,0,.55);}
+  .topbar-voltar{background:#1A1A1A;color:#FFD600;border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
+  .container{padding:0 20px;}
   .card { background:#FFFFFF; border-radius:12px; padding:16px; margin-bottom:14px; max-width:420px; }
   .card-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
   .posto-nome { font-size:15px; font-weight:500; color:#1A1A1A; }
@@ -33,10 +37,18 @@
 </head>
 <body>
   <div class="topbar">
-    <h1>Pedido de listagem</h1>
-    <a href="hub_bd.html" id="link-voltar">&larr; Menu</a>
+    <div class="topbar-brand">
+      <div class="topbar-logo">99</div>
+      <div>
+        <div class="topbar-title">Pedido de Listagem</div>
+        <div class="topbar-sub">Confirmar comprovante bancário e Ptarget antes da subida</div>
+      </div>
+    </div>
+    <a href="hub_bd.html" id="link-voltar" class="topbar-voltar">&larr; Menu</a>
   </div>
-  <div id="lista"></div>
+  <div class="container">
+    <div id="lista"></div>
+  </div>
 
 <script>
 // PREENCHER: mesma URL do Apps Script já usada nas outras telas
