@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Atribuir Handovers , 99Abastece Relaunch SP</title>
+<title>Handover , 99Abastece Relaunch SP</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -21,20 +21,6 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .topbar-voltar{background:var(--preto);color:var(--amarelo);border:none;border-radius:8px;padding:8px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;text-decoration:none;}
 
 .container{max-width:900px;margin:0 auto;padding:20px 24px 60px;}
-
-.card{background:var(--cinza-escuro);border:1.5px solid var(--borda);border-left:5px solid var(--amarelo);border-radius:var(--radius);padding:22px 26px;margin-bottom:16px;}
-.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;}
-.card-posto{font-weight:800;font-size:15px;}
-.card-meta{font-size:11px;color:var(--texto-claro);margin-bottom:2px;}
-.card-meta b{color:var(--branco);}
-
-.atribuir-row{display:flex;gap:10px;margin-top:14px;}
-.atribuir-row select{flex:1;background:var(--cinza-medio);border:1.5px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:13px;padding:10px 12px;}
-.atribuir-row button{background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:0 20px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
-.atribuir-row button:disabled{opacity:.5;cursor:not-allowed;}
-
-.sugestao-nursery{background:#2A2400;border:1px solid var(--amarelo);border-radius:8px;padding:9px 12px;margin-top:10px;font-size:12px;color:#FFE066;}
-.btn-usar-sugestao{background:none;border:none;color:var(--amarelo);text-decoration:underline;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;cursor:pointer;padding:0;}
 
 .tarefa-fernanda{background:var(--cinza-escuro);border:1.5px solid var(--vermelho);border-left:5px solid var(--vermelho);border-radius:var(--radius);padding:16px 20px;margin-bottom:14px;}
 .tarefa-fernanda-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;}
@@ -61,16 +47,15 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
   <div class="topbar-brand">
     <div class="topbar-logo">99</div>
     <div>
-      <div class="topbar-title">Atribuir Handovers</div>
-      <div class="topbar-sub">Defina qual Nursery assume cada posto</div>
+      <div class="topbar-title">Handover</div>
+      <div class="topbar-sub">Postos aguardando definição do Nursery responsável</div>
     </div>
   </div>
   <a class="topbar-voltar" id="link-voltar" href="hub_coordenacao.html">← Menu</a>
 </div>
 
 <div class="container">
-  <div id="minhas-tarefas"></div>
-  <div id="lista"><div class="loading">Carregando...</div></div>
+  <div id="minhas-tarefas"><div class="loading">Carregando...</div></div>
 </div>
 
 <script>
@@ -87,11 +72,9 @@ window.onload = function() {
   const params = new URLSearchParams(window.location.search);
   quemAtual = params.get('nome') || '';
   document.getElementById('link-voltar').href = 'hub_coordenacao.html' + (quemAtual ? ('?nome=' + encodeURIComponent(quemAtual)) : '');
-  carregar();
   carregarMinhasTarefas();
 };
 
-// ── TAREFAS DA FERNANDA (ex: BD Engajamento faltando) ────────────
 function carregarMinhasTarefas() {
   const cb = 'cbtaref_' + Date.now();
   window[cb] = function(data) {
@@ -110,7 +93,10 @@ function carregarMinhasTarefas() {
 
 function renderizarMinhasTarefas(lista) {
   const container = document.getElementById('minhas-tarefas');
-  if (!lista.length) { container.innerHTML = ''; return; }
+  if (!lista.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>Nenhuma tarefa pendente agora.</div>';
+    return;
+  }
 
   container.innerHTML = lista.map(t => {
     const ehBdNursery = t.tarefa === TEXTO_TAREFA_BD_NURSERY;
@@ -142,9 +128,6 @@ function renderizarMinhasTarefas(lista) {
   }).join('');
 }
 
-// Escreve o BD Nursery escolhido direto na coluna H da Funil SP, cria o
-// Handover já pronto pra iniciar (o sistema descobre sozinho o BD de
-// Aquisição via coluna F), e conclui a tarefa no mesmo clique.
 function resolverBdNursery(idTarefa, cnpj) {
   const select = document.getElementById('select-resolver-' + idTarefa);
   const erroDiv = document.getElementById('erro-resolver-' + idTarefa);
@@ -181,6 +164,7 @@ function resolverBdNursery(idTarefa, cnpj) {
     }
     const card = document.getElementById('tarefa-' + idTarefa);
     if (card) card.remove();
+    if (!document.querySelector('.tarefa-fernanda')) carregarMinhasTarefas();
   };
   const s = document.createElement('script');
   s.id = 'jsonp-resolverbd';
@@ -205,94 +189,11 @@ function concluirMinhaTarefa(id) {
     if (!resultado || resultado.status !== 'ok') { alert('Erro ao concluir. Tenta de novo.'); return; }
     const card = document.getElementById('tarefa-' + id);
     if (card) card.remove();
+    if (!document.querySelector('.tarefa-fernanda')) carregarMinhasTarefas();
   };
   const s = document.createElement('script');
   s.id = 'jsonp-conctar';
   s.onerror = function() { delete window[cb]; alert('Erro ao concluir. Tenta de novo.'); };
-  s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
-  document.head.appendChild(s);
-}
-
-function carregar() {
-  const cb = 'cbatrib_' + Date.now();
-  window[cb] = function(data) {
-    delete window[cb];
-    const el = document.getElementById('jsonp-atrib');
-    if (el) el.remove();
-    renderizar(Array.isArray(data) ? data : []);
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-atrib';
-  s.onerror = function() {
-    delete window[cb];
-    document.getElementById('lista').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div>Não consegui buscar os handovers. Tenta recarregar.</div>';
-  };
-  s.src = SCRIPT_URL + '?tipo=handovers_atribuicao&callback=' + cb + '&t=' + Date.now();
-  document.head.appendChild(s);
-}
-
-function renderizar(lista) {
-  const container = document.getElementById('lista');
-  if (!lista.length) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>Nenhum handover aguardando atribuição agora.</div>';
-    return;
-  }
-  container.innerHTML = lista.map(h => {
-    const temSugestao = h.sugestao_nursery && h.sugestao_nursery.length > 0;
-    return `
-    <div class="card" id="card-${h.id_handover}">
-      <div class="card-top">
-        <div class="card-posto">${h.posto || 'Posto não informado'}</div>
-      </div>
-      <div class="card-meta">CNPJ: <b>${h.cnpj}</b></div>
-      <div class="card-meta">BD de Aquisição: <b>${h.bd_aquisicao || '-'}</b></div>
-      ${h.rede ? `<div class="card-meta">Rede: <b>${h.rede}</b></div>` : ''}
-      ${h.sub ? `<div class="card-meta">Sub: <b>${h.sub}</b></div>` : ''}
-      <div class="card-meta">Listado em: <b>${h.data_listagem || h.data_criacao || '-'}</b></div>
-      ${temSugestao ? `<div class="sugestao-nursery">💡 <b>${h.sugestao_nursery}</b> já atende ${h.sugestao_count} posto(s) dessa rede — <button class="btn-usar-sugestao" onclick="usarSugestao('${h.id_handover}','${h.sugestao_nursery}')">usar essa sugestão</button></div>` : ''}
-      <div class="atribuir-row">
-        <select id="select-${h.id_handover}">
-          <option value="">Escolher Nursery</option>
-          ${NURSERY_BDS.map(n => `<option value="${n}">${n}</option>`).join('')}
-        </select>
-        <button id="btn-${h.id_handover}" onclick="atribuir('${h.id_handover}')">Atribuir</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function usarSugestao(id, nursery) {
-  const select = document.getElementById('select-' + id);
-  if (select) select.value = nursery;
-}
-
-function atribuir(id) {
-  const select = document.getElementById('select-' + id);
-  const nursery = select.value;
-  if (!nursery) { alert('Escolhe quem vai assumir antes de atribuir.'); return; }
-
-  const btn = document.getElementById('btn-' + id);
-  btn.disabled = true;
-  btn.textContent = 'Atribuindo...';
-
-  const params = new URLSearchParams({ action: 'atribuir_nursery', id_handover: id, bd_nursery: nursery });
-  const cb = 'cbatribuir_' + Date.now();
-  window[cb] = function(resultado) {
-    delete window[cb];
-    const el = document.getElementById('jsonp-atribuir');
-    if (el) el.remove();
-    if (!resultado || resultado.status !== 'ok') {
-      alert('Erro ao atribuir. Tenta de novo.');
-      btn.disabled = false;
-      btn.textContent = 'Atribuir';
-      return;
-    }
-    const card = document.getElementById('card-' + id);
-    if (card) card.remove();
-  };
-  const s = document.createElement('script');
-  s.id = 'jsonp-atribuir';
-  s.onerror = function() { delete window[cb]; alert('Erro ao atribuir. Tenta de novo.'); btn.disabled = false; btn.textContent = 'Atribuir'; };
   s.src = SCRIPT_URL + '?' + params.toString() + '&callback=' + cb;
   document.head.appendChild(s);
 }
