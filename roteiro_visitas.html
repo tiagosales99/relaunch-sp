@@ -72,7 +72,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 
     <div class="campo">
       <div class="campo-label">Bairro</div>
-      <input type="text" id="filtro-bairro" placeholder="Ex: Pinheiros" />
+      <select id="filtro-bairro"><option value="">Todos</option></select>
     </div>
 
     <div class="campo">
@@ -108,6 +108,7 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
     </div>
 
     <button class="btn-gerar" id="btn-gerar" disabled>Gerar rota</button>
+    <div id="msg-carregamento" style="font-size:11px; color:var(--texto-claro); margin-top:8px; text-align:center;">Carregando seus leads...</div>
   </div>
 
   <div class="resultado-card" id="resultado-card" style="display:none;">
@@ -169,30 +170,52 @@ function distanciaKm(lat1, lon1, lat2, lon2) {
 
 function carregarLeads() {
   const btn = document.getElementById('btn-gerar');
+  const msg = document.getElementById('msg-carregamento');
   const cb = 'cbroteiro_' + Date.now();
   window[cb] = function(data) {
     delete window[cb];
     const el = document.getElementById('jsonp-roteiro');
     if (el) el.remove();
-    todosLeads = (data && data.leads) || [];
+
+    if (!data || data.status !== 'ok') {
+      msg.textContent = '⚠️ ' + ((data && data.msg) || 'Não consegui carregar seus leads.');
+      msg.style.color = 'var(--vermelho)';
+      return;
+    }
+
+    todosLeads = data.leads || [];
+    if (!todosLeads.length) {
+      msg.textContent = 'Nenhum lead encontrado pra você na Leads W_3.';
+      return;
+    }
+
     montarFiltrosDinamicos();
+    msg.textContent = `${todosLeads.length} lead(s) carregado(s).`;
     btn.disabled = false;
   };
   const s = document.createElement('script');
   s.id = 'jsonp-roteiro';
-  s.onerror = function() { delete window[cb]; };
+  s.onerror = function() {
+    delete window[cb];
+    msg.textContent = '⚠️ Erro de conexão ao buscar seus leads. Recarrega a página.';
+    msg.style.color = 'var(--vermelho)';
+  };
   s.src = APPS_SCRIPT_URL + '?tipo=leads_para_roteiro&bd=' + encodeURIComponent(nomeAtual) + '&callback=' + cb + '&t=' + Date.now();
   document.head.appendChild(s);
 }
 
 function montarFiltrosDinamicos() {
   const subs = [...new Set(todosLeads.map(l => l.sub).filter(Boolean))].sort();
+  const bairros = [...new Set(todosLeads.map(l => l.bairro).filter(Boolean))].sort();
   const redes = [...new Set(todosLeads.map(l => l.rede).filter(Boolean))].sort();
   const status = [...new Set(todosLeads.map(l => l.status_visita).filter(Boolean))].sort();
   const comCoordenada = todosLeads.filter(l => l.lat && l.long);
 
   const selSub = document.getElementById('filtro-sub');
   subs.forEach(s => selSub.innerHTML += `<option value="${s}">Sub ${s}</option>`);
+
+  const selBairro = document.getElementById('filtro-bairro');
+  bairros.forEach(b => selBairro.innerHTML += `<option value="${b}">${b}</option>`);
 
   const selRede = document.getElementById('filtro-rede');
   redes.forEach(r => selRede.innerHTML += `<option value="${r}">${r}</option>`);
@@ -206,7 +229,7 @@ function montarFiltrosDinamicos() {
 
 function gerarRota() {
   const sub = document.getElementById('filtro-sub').value;
-  const bairro = document.getElementById('filtro-bairro').value.trim().toLowerCase();
+  const bairro = document.getElementById('filtro-bairro').value;
   const rede = document.getElementById('filtro-rede').value;
   const status = document.getElementById('filtro-status').value;
   const soNaoVisitado = document.getElementById('filtro-nao-visitado').checked;
@@ -215,7 +238,7 @@ function gerarRota() {
 
   let filtrados = todosLeads.filter(l => {
     if (sub && l.sub !== sub) return false;
-    if (bairro && !(l.bairro || '').toLowerCase().includes(bairro)) return false;
+    if (bairro && l.bairro !== bairro) return false;
     if (rede && l.rede !== rede) return false;
     if (status && l.status_visita !== status) return false;
     if (soNaoVisitado && l.visitado_esse_mes) return false;
