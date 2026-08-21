@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roteiro de Visitas , 99Abastece Relaunch SP</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <style>
 :root {
   --amarelo: #FFD600; --preto: #1A1A1A; --cinza-escuro: #232323; --cinza-medio: #2C2C2C;
@@ -23,18 +24,20 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 
 .filtros-card{background:var(--cinza-escuro);border:1px solid var(--borda);border-radius:var(--radius);padding:18px 20px;margin-bottom:16px;}
 .filtros-titulo{font-size:12px;font-weight:800;color:var(--branco);margin-bottom:14px;}
-.campo{margin-bottom:12px;}
-.campo-label{font-size:11px;color:var(--texto-claro);margin-bottom:5px;}
-.campo select, .campo input{width:100%;background:var(--cinza-medio);border:1px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Montserrat',sans-serif;font-size:12px;padding:8px 10px;}
-.prio-row{display:flex;gap:6px;}
-.prio-btn{flex:1;background:var(--cinza-medio);color:var(--texto-claro);border:1px solid var(--borda);border-radius:6px;padding:6px;text-align:center;font-size:11px;cursor:pointer;}
-.prio-btn.ativo{background:var(--amarelo);color:var(--preto);border-color:var(--amarelo);font-weight:700;}
-.check-row{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.campo{margin-bottom:16px;}
+.campo:last-of-type{margin-bottom:4px;}
+.campo-label{font-size:11px;color:var(--texto-claro);margin-bottom:8px;}
+.campo-label small{color:#6B6963;font-weight:400;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{background:var(--cinza-medio);color:var(--texto-claro);border:1px solid var(--borda);border-radius:14px;padding:5px 12px;font-size:11px;cursor:pointer;user-select:none;}
+.chip.ativo{background:var(--amarelo);color:var(--preto);border-color:var(--amarelo);font-weight:700;}
+.chips-vazio{font-size:11px;color:#6B6963;font-style:italic;}
+.check-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
 .check-row input{width:16px;height:16px;accent-color:var(--amarelo);}
-.btn-gerar{width:100%;background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:11px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;cursor:pointer;margin-top:4px;}
+.btn-gerar{width:100%;background:var(--amarelo);color:var(--preto);border:none;border-radius:8px;padding:11px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;cursor:pointer;margin-top:12px;}
 .btn-gerar:disabled{opacity:.5;cursor:not-allowed;}
 
-.resultado-card{background:var(--cinza-escuro);border:1px solid var(--borda);border-radius:var(--radius);padding:16px 20px;}
+.resultado-card{background:var(--cinza-escuro);border:1px solid var(--borda);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;}
 .resultado-titulo{font-size:12px;font-weight:800;color:var(--branco);margin-bottom:12px;}
 .parada{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .parada:last-child{margin-bottom:0;}
@@ -42,7 +45,13 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
 .parada-nome{font-size:12px;color:var(--branco);}
 .parada-meta{font-size:10px;color:var(--texto-claro);}
 .empty{text-align:center;padding:30px 20px;color:var(--texto-claro);}
-.loading{text-align:center;padding:30px 20px;color:var(--texto-claro);}
+
+.mapa-card{background:var(--cinza-escuro);border:1px solid var(--borda);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;}
+#mapa-rota{height:280px;border-radius:10px;overflow:hidden;}
+
+.nav-row{display:flex;gap:8px;}
+.nav-btn{flex:1;background:var(--cinza-medio);border:1px solid var(--borda);color:var(--branco);border-radius:8px;padding:10px;text-align:center;font-size:12px;font-weight:700;text-decoration:none;cursor:pointer;}
+.nav-aviso{font-size:10px;color:#6B6963;margin-top:8px;}
 </style>
 </head>
 <body>
@@ -64,37 +73,38 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
     <div class="filtros-titulo">Filtros</div>
 
     <div class="campo">
-      <div class="campo-label">Sub-região</div>
-      <select id="filtro-sub"><option value="">Todas</option></select>
+      <div class="campo-label">Sub-região <small>(pode marcar mais de uma)</small></div>
+      <div class="chips" id="chips-sub"><span class="chips-vazio">Carregando...</span></div>
     </div>
 
     <div class="campo">
-      <div class="campo-label">Bairro</div>
-      <select id="filtro-bairro"><option value="">Todos</option></select>
+      <div class="campo-label">Bairro <small>(pode marcar mais de um)</small></div>
+      <div class="chips" id="chips-bairro"><span class="chips-vazio">Carregando...</span></div>
     </div>
 
     <div class="campo">
-      <div class="campo-label">Prioridade</div>
-      <div class="prio-row" id="prio-row">
-        <div class="prio-btn ativo" data-val="">Todas</div>
-        <div class="prio-btn" data-val="high">High Priority</div>
-        <div class="prio-btn" data-val="priority">Priority</div>
+      <div class="campo-label">Prioridade <small>(pode marcar mais de uma)</small></div>
+      <div class="chips" id="chips-prioridade">
+        <div class="chip" data-val="high">High Priority</div>
+        <div class="chip" data-val="priority">Priority</div>
       </div>
     </div>
 
     <div class="campo">
-      <div class="campo-label">Rede</div>
-      <select id="filtro-rede"><option value="">Todas</option></select>
+      <div class="campo-label">Rede <small>(pode marcar mais de uma)</small></div>
+      <div class="chips" id="chips-rede"><span class="chips-vazio">Carregando...</span></div>
     </div>
 
     <div class="campo">
-      <div class="campo-label">Status da visita</div>
-      <select id="filtro-status"><option value="">Qualquer status</option></select>
+      <div class="campo-label">Status da visita <small>(pode marcar mais de um)</small></div>
+      <div class="chips" id="chips-status"><span class="chips-vazio">Carregando...</span></div>
     </div>
 
-    <div class="check-row">
-      <input type="checkbox" id="filtro-nao-visitado" />
-      <div style="font-size:12px;">Só postos ainda não visitados esse mês</div>
+    <div class="campo">
+      <div class="check-row">
+        <input type="checkbox" id="filtro-nao-visitado" />
+        <div style="font-size:12px;">Só postos ainda não visitados esse mês</div>
+      </div>
     </div>
 
     <button class="btn-gerar" id="btn-gerar" disabled>Gerar rota</button>
@@ -106,15 +116,31 @@ body{font-family:'Montserrat',sans-serif;font-size:13px;background:var(--preto);
     <div id="lista-paradas"></div>
   </div>
 
+  <div class="mapa-card" id="mapa-card" style="display:none;">
+    <div class="resultado-titulo">Mapa da rota</div>
+    <div id="mapa-rota"></div>
+  </div>
+
+  <div id="nav-card" style="display:none;">
+    <div class="nav-row">
+      <a class="nav-btn" id="btn-google-maps" href="#" target="_blank" rel="noopener">📍 Abrir no Google Maps</a>
+      <a class="nav-btn" id="btn-waze" href="#" target="_blank" rel="noopener">🚗 Abrir no Waze</a>
+    </div>
+    <div class="nav-aviso">Google Maps abre com a rota inteira em ordem. Waze só aceita 1 destino por vez — abre com a primeira parada.</div>
+  </div>
+
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="grids_relaunch.js"></script>
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKWhHlEG9zMBbpg7ADTuU_Ares6xivwmSrMvFnj0689ILmisASnfgZie0botnZ0A/exec';
+const CORES_BD = { 'Andre': '#378ADD', 'Vera': '#EF9F27', 'Felipe': '#639922', 'Inacio': '#444441', 'Sutil': '#7F77DD' };
 
 let nomeAtual = '';
 let todosLeads = [];
-let prioridadeAtiva = '';
+let selecionados = { sub: new Set(), bairro: new Set(), prioridade: new Set(), rede: new Set(), status: new Set() };
+let mapaLeaflet = null;
 
 window.onload = function() {
   const params = new URLSearchParams(window.location.search);
@@ -122,16 +148,36 @@ window.onload = function() {
   document.getElementById('link-voltar').href = 'hub_bd.html' + (nomeAtual ? ('?nome=' + encodeURIComponent(nomeAtual)) : '');
   carregarLeads();
 
-  document.querySelectorAll('.prio-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.prio-btn').forEach(b => b.classList.remove('ativo'));
-      btn.classList.add('ativo');
-      prioridadeAtiva = btn.dataset.val;
-    });
+  // Prioridade já vem fixa no HTML, só precisa do listener
+  document.querySelectorAll('#chips-prioridade .chip').forEach(chip => {
+    chip.addEventListener('click', () => toggleChip(chip, 'prioridade'));
   });
 
   document.getElementById('btn-gerar').addEventListener('click', gerarRota);
 };
+
+function toggleChip(chip, categoria) {
+  const val = chip.dataset.val;
+  if (selecionados[categoria].has(val)) {
+    selecionados[categoria].delete(val);
+    chip.classList.remove('ativo');
+  } else {
+    selecionados[categoria].add(val);
+    chip.classList.add('ativo');
+  }
+}
+
+function montarChips(containerId, valores, categoria) {
+  const container = document.getElementById(containerId);
+  if (!valores.length) {
+    container.innerHTML = '<span class="chips-vazio">Nenhum valor encontrado nos seus leads.</span>';
+    return;
+  }
+  container.innerHTML = valores.map(v => `<div class="chip" data-val="${v}">${v}</div>`).join('');
+  container.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => toggleChip(chip, categoria));
+  });
+}
 
 function pontoDentroPoligono(lat, lng, coords) {
   let dentro = false;
@@ -144,9 +190,9 @@ function pontoDentroPoligono(lat, lng, coords) {
   }
   return dentro;
 }
-function acharGridDoPosto(lat, lng) {
+function acharGridInfo(lat, lng) {
   for (const feature of GRIDS_RELAUNCH_SP.features) {
-    if (pontoDentroPoligono(lat, lng, feature.geometry.coordinates[0])) return feature.properties.grid;
+    if (pontoDentroPoligono(lat, lng, feature.geometry.coordinates[0])) return feature.properties;
   }
   return null;
 }
@@ -172,7 +218,16 @@ function carregarLeads() {
       return;
     }
 
-    montarFiltrosDinamicos();
+    const subs = [...new Set(todosLeads.map(l => l.sub).filter(Boolean))].sort();
+    const bairros = [...new Set(todosLeads.map(l => l.bairro).filter(Boolean))].sort();
+    const redes = [...new Set(todosLeads.map(l => l.rede).filter(Boolean))].sort();
+    const status = [...new Set(todosLeads.map(l => l.status_visita).filter(Boolean))].sort();
+
+    montarChips('chips-sub', subs.map(s => 'Sub ' + s), 'sub');
+    montarChips('chips-bairro', bairros, 'bairro');
+    montarChips('chips-rede', redes, 'rede');
+    montarChips('chips-status', status, 'status');
+
     msg.textContent = `${todosLeads.length} lead(s) carregado(s).`;
     btn.disabled = false;
   };
@@ -187,52 +242,40 @@ function carregarLeads() {
   document.head.appendChild(s);
 }
 
-function montarFiltrosDinamicos() {
-  const subs = [...new Set(todosLeads.map(l => l.sub).filter(Boolean))].sort();
-  const bairros = [...new Set(todosLeads.map(l => l.bairro).filter(Boolean))].sort();
-  const redes = [...new Set(todosLeads.map(l => l.rede).filter(Boolean))].sort();
-  const status = [...new Set(todosLeads.map(l => l.status_visita).filter(Boolean))].sort();
-
-  const selSub = document.getElementById('filtro-sub');
-  subs.forEach(s => selSub.innerHTML += `<option value="${s}">Sub ${s}</option>`);
-
-  const selBairro = document.getElementById('filtro-bairro');
-  bairros.forEach(b => selBairro.innerHTML += `<option value="${b}">${b}</option>`);
-
-  const selRede = document.getElementById('filtro-rede');
-  redes.forEach(r => selRede.innerHTML += `<option value="${r}">${r}</option>`);
-
-  const selStatus = document.getElementById('filtro-status');
-  status.forEach(st => selStatus.innerHTML += `<option value="${st}">${st}</option>`);
-}
-
 function gerarRota() {
-  const sub = document.getElementById('filtro-sub').value;
-  const bairro = document.getElementById('filtro-bairro').value;
-  const rede = document.getElementById('filtro-rede').value;
-  const status = document.getElementById('filtro-status').value;
   const soNaoVisitado = document.getElementById('filtro-nao-visitado').checked;
 
   let filtrados = todosLeads.filter(l => {
-    if (sub && l.sub !== sub) return false;
-    if (bairro && l.bairro !== bairro) return false;
-    if (rede && l.rede !== rede) return false;
-    if (status && l.status_visita !== status) return false;
+    if (selecionados.sub.size && !selecionados.sub.has('Sub ' + l.sub)) return false;
+    if (selecionados.bairro.size && !selecionados.bairro.has(l.bairro)) return false;
+    if (selecionados.rede.size && !selecionados.rede.has(l.rede)) return false;
+    if (selecionados.status.size && !selecionados.status.has(l.status_visita)) return false;
     if (soNaoVisitado && l.visitado_esse_mes) return false;
-    if (prioridadeAtiva === 'high' && !/high/i.test(l.prioridade)) return false;
-    if (prioridadeAtiva === 'priority' && !/priority/i.test(l.prioridade)) return false;
+    if (selecionados.prioridade.size) {
+      const bateHigh = selecionados.prioridade.has('high') && /high/i.test(l.prioridade);
+      const batePriority = selecionados.prioridade.has('priority') && /priority/i.test(l.prioridade) && !/high/i.test(l.prioridade);
+      if (!bateHigh && !batePriority) return false;
+    }
     return true;
   });
 
-  filtrados.forEach(l => { l.grid = (l.lat && l.long) ? acharGridDoPosto(l.lat, l.long) : null; });
-  const comGrid = filtrados.filter(l => l.grid !== null).sort((a, b) => a.grid - b.grid);
-  const semGrid = filtrados.filter(l => l.grid === null);
+  filtrados.forEach(l => { l.gridInfo = (l.lat && l.long) ? acharGridInfo(l.lat, l.long) : null; });
+  const comGrid = filtrados.filter(l => l.gridInfo).sort((a, b) => a.gridInfo.grid - b.gridInfo.grid);
+  const semGrid = filtrados.filter(l => !l.gridInfo);
   const ordenado = comGrid.concat(semGrid);
 
+  renderizarLista(ordenado);
+  renderizarMapa(ordenado);
+  renderizarLinksNavegacao(ordenado);
+}
+
+function renderizarLista(ordenado) {
   const card = document.getElementById('resultado-card');
   const titulo = document.getElementById('resultado-titulo');
   const lista = document.getElementById('lista-paradas');
   card.style.display = 'block';
+  document.getElementById('mapa-card').style.display = 'none';
+  document.getElementById('nav-card').style.display = 'none';
 
   if (!ordenado.length) {
     titulo.textContent = 'Nenhum posto encontrado com esses filtros';
@@ -246,10 +289,61 @@ function gerarRota() {
       <div class="parada-num">${i + 1}</div>
       <div>
         <div class="parada-nome">${l.posto || l.cnpj}</div>
-        <div class="parada-meta">${l.bairro || '-'}${l.grid !== null ? ' · Grid ' + l.grid : ''}${l.rede ? ' · ' + l.rede : ''}</div>
+        <div class="parada-meta">${l.bairro || '-'}${l.gridInfo ? ' · Grid ' + l.gridInfo.grid : ''}${l.rede ? ' · ' + l.rede : ''}</div>
       </div>
     </div>
   `).join('');
+}
+
+function renderizarMapa(ordenado) {
+  const comCoordenada = ordenado.filter(l => l.lat && l.long);
+  const mapaCard = document.getElementById('mapa-card');
+  if (!comCoordenada.length) { mapaCard.style.display = 'none'; return; }
+  mapaCard.style.display = 'block';
+
+  if (mapaLeaflet) { mapaLeaflet.remove(); mapaLeaflet = null; }
+
+  mapaLeaflet = L.map('mapa-rota', { renderer: L.canvas() }).setView([comCoordenada[0].lat, comCoordenada[0].long], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '', maxZoom: 18 }).addTo(mapaLeaflet);
+
+  L.geoJSON(GRIDS_RELAUNCH_SP, {
+    style: feature => {
+      const cor = CORES_BD[feature.properties.bd] || '#B4B2A9';
+      let opacidade = feature.properties.prioridade === 'High Priority' ? 0.4 : feature.properties.prioridade === 'Priority' ? 0.22 : 0.08;
+      return { color: cor, weight: 1, fillColor: cor, fillOpacity: opacidade };
+    }
+  }).addTo(mapaLeaflet);
+
+  const pontos = [];
+  comCoordenada.forEach((l, i) => {
+    const numeroIcone = L.divIcon({
+      html: `<div style="background:#FFD600;color:#1A1A1A;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;border:2px solid #1A1A1A;">${i + 1}</div>`,
+      iconSize: [24, 24], className: ''
+    });
+    L.marker([l.lat, l.long], { icon: numeroIcone }).addTo(mapaLeaflet).bindTooltip(l.posto || l.cnpj);
+    pontos.push([l.lat, l.long]);
+  });
+
+  if (pontos.length > 1) L.polyline(pontos, { color: '#FFD600', weight: 3, dashArray: '6,6' }).addTo(mapaLeaflet);
+  if (pontos.length) mapaLeaflet.fitBounds(pontos, { padding: [30, 30] });
+}
+
+function renderizarLinksNavegacao(ordenado) {
+  const comCoordenada = ordenado.filter(l => l.lat && l.long);
+  const navCard = document.getElementById('nav-card');
+  if (!comCoordenada.length) { navCard.style.display = 'none'; return; }
+  navCard.style.display = 'block';
+
+  // Google Maps: aceita rota multi-parada (até 25 waypoints no plano gratuito)
+  const destino = comCoordenada[comCoordenada.length - 1];
+  const waypoints = comCoordenada.slice(0, -1).map(l => `${l.lat},${l.long}`).join('|');
+  let urlGoogle = `https://www.google.com/maps/dir/?api=1&destination=${destino.lat},${destino.long}&travelmode=driving`;
+  if (waypoints) urlGoogle += `&waypoints=${encodeURIComponent(waypoints)}`;
+  document.getElementById('btn-google-maps').href = urlGoogle;
+
+  // Waze só aceita 1 destino — abre com a primeira parada
+  const primeira = comCoordenada[0];
+  document.getElementById('btn-waze').href = `https://waze.com/ul?ll=${primeira.lat},${primeira.long}&navigate=yes`;
 }
 </script>
 </body>
