@@ -34,7 +34,7 @@
 <body>
   <div class="topbar">
     <h1>Pedido de listagem</h1>
-    <a href="hub_bd.html">&larr; Menu</a>
+    <a href="hub_bd.html" id="link-voltar">&larr; Menu</a>
   </div>
   <div id="lista"></div>
 
@@ -43,6 +43,7 @@
 const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKWhHlEG9zMBbpg7ADTuU_Ares6xivwmSrMvFnj0689ILmisASnfgZie0botnZ0A/exec';
 const params = new URLSearchParams(window.location.search);
 const nomeBd = params.get('nome') || '';
+document.getElementById('link-voltar').href = 'hub_bd.html' + (nomeBd ? ('?nome=' + encodeURIComponent(nomeBd)) : '');
 
 async function carregar() {
   const lista = document.getElementById('lista');
