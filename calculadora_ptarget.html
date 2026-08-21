@@ -117,7 +117,7 @@ function buscarPtarget() {
     }
 
     document.getElementById('card-posto').textContent = data.posto || 'Posto não identificado';
-    document.getElementById('card-info').innerHTML = 'Sub ' + data.sub + ' &middot; <b>' + data.bandeira + '</b>';
+    document.getElementById('card-info').innerHTML = 'Sub ' + data.sub + ' &middot; <b>' + data.bandeira + '</b>' + (data.endereco ? '<br>' + data.endereco : '');
     document.getElementById('tbody-combustiveis').innerHTML = data.combustiveis.map(c =>
       '<tr><td>' + c.combustivel + '</td><td>R$ ' + Number(c.ptarget).toFixed(2).replace('.', ',') + '</td></tr>'
     ).join('');
