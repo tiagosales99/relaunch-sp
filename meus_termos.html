@@ -129,6 +129,7 @@ function renderizarLista(termos) {
         <div class="termo-data">Assinado em ${t.data_assinatura || '-'}</div>
       </div>
       <div class="termo-meta">CNPJ: <b>${t.cnpj}</b> ${t.rede ? '· Rede: <b>' + t.rede + '</b>' : ''}</div>
+      ${t.endereco ? `<div class="termo-meta">Endereço: <b>${t.endereco}</b></div>` : ''}
       <div class="termo-meta">Prioridade: <b>${t.prioridade || '-'}</b> ${t.wave ? '· ' + t.wave : ''}</div>
       ${t.socio_assinou ? `<div class="termo-meta">Sócio que assinou: <b>${t.socio_assinou}</b></div>` : ''}
       ${t.etapa_funil ? `<div class="termo-meta">Etapa atual no funil: <b>${t.etapa_funil}</b></div>` : ''}
