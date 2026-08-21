@@ -40,14 +40,25 @@
 
 <script>
 // PREENCHER: mesma URL do Apps Script já usada nas outras telas
-const APPS_SCRIPT_URL = 'COLE_AQUI_A_URL_DO_APPS_SCRIPT';
+const APPS_SCRIPT_URL = 'https://script.google.com/a/macros/99app.com/s/AKfycbyGDiXKWhHlEG9zMBbpg7ADTuU_Ares6xivwmSrMvFnj0689ILmisASnfgZie0botnZ0A/exec';
 const params = new URLSearchParams(window.location.search);
 const nomeBd = params.get('nome') || '';
 
 async function carregar() {
-  const resp = await fetch(`${APPS_SCRIPT_URL}?tipo=pedidos_listagem_aquisicao&bd=${encodeURIComponent(nomeBd)}`);
-  const dados = await resp.json();
   const lista = document.getElementById('lista');
+  if (!nomeBd) {
+    lista.innerHTML = '<div class="vazio">⚠️ Acesse essa página pelo menu, faltou identificar quem você é.</div>';
+    return;
+  }
+  lista.innerHTML = '<div class="vazio">Carregando...</div>';
+  let dados;
+  try {
+    const resp = await fetch(`${APPS_SCRIPT_URL}?tipo=pedidos_listagem_aquisicao&bd=${encodeURIComponent(nomeBd)}`);
+    dados = await resp.json();
+  } catch (err) {
+    lista.innerHTML = '<div class="vazio">⚠️ Erro ao buscar os pedidos. Recarrega a página.</div>';
+    return;
+  }
   lista.innerHTML = '';
 
   if (!dados.length) {
